@@ -7,8 +7,12 @@
     "declarations": true
   },
   "dependencies": {
+    "dayjs": "^1.11.11",
     "egg": "^3.17.5",
-    "egg-scripts": "2"
+    "egg-jwt": "^3.1.7",
+    "egg-mysql": "^4.0.0",
+    "egg-scripts": "2",
+    "egg-validate": "^2.0.2"
   },
   "devDependencies": {
     "egg-bin": "6",

@@ -14,11 +14,29 @@ module.exports = appInfo => {
   config.keys = appInfo.name + '_1720548611153_1955';
 
   // add your middleware config here
-  config.middleware = [];
+  config.middleware = [ 'notfoundHandler', 'errorHandler' ];
+
+  config.security = {
+    csrf: {
+      enable: false
+    }
+  };
 
   // add your user config here
   const userConfig = {
     // myAppName: 'egg',
+  };
+
+  // 公共jwt配置
+  config.jwt = {
+    expiresIn: 365 * 86400 // 365天过期
+  };
+
+  // HttpClient配置
+  config.httpclient = {
+    request: {
+      timeout: 10000
+    }
   };
 
   return {
