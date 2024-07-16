@@ -1,6 +1,7 @@
 // app/service/auth.js
 
 const Service = require('egg').Service;
+const dayjs = require('dayjs');
 const cryptojs = require('crypto-js');
 const tripledes = require('crypto-js/tripledes');
 
@@ -38,7 +39,8 @@ class AuthService extends Service {
       // 登录成功，更新 uid, route
       const hit = ctx.app.mysql.update('user', {
         jw_uid: cookie_uid.replace('uid=', ''),
-        jw_route: cookie_route.replace('route=', '')
+        jw_route: cookie_route.replace('route=', ''),
+        update_time: dayjs().unix()
       }, {
         where: {
           student_id: username
