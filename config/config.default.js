@@ -14,7 +14,7 @@ module.exports = appInfo => {
   config.keys = appInfo.name + '_1720548611153_1955';
 
   // add your middleware config here
-  config.middleware = [ 'notfoundHandler', 'errorHandler' ];
+  config.middleware = [ 'notfoundHandler', 'errorHandler', 'jwtVerifier' ];
 
   // 安全设置，关闭csrf检测
   config.security = {

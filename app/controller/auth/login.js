@@ -42,10 +42,10 @@ class AuthLoginController extends Controller {
         }
       });
 
-      if (login.status === 302) {
+      if(login.status === 302) {
         // 登录成功，存入/更新信息
         const info = await this.processInfo(username, password, cookie_uid, cookie_route);
-        if (info.status === 1) {
+        if(info.status === 1) {
           // 存入/更新信息成功
           ctx.body = {
             code: 200,
@@ -69,7 +69,7 @@ class AuthLoginController extends Controller {
           message: '密码错误'
         };
       }
-    } catch (err) {
+    } catch(err) {
       // 教务系统无法访问，根据数据库内信息比对登录
       const local = await ctx.app.mysql.select('user', {
         where: {
@@ -77,9 +77,9 @@ class AuthLoginController extends Controller {
         }
       });
 
-      if (local.length > 0) {
+      if(local.length > 0) {
         // 拥有该用户，进行比对
-        if (tripledes.encrypt(password, ctx.app.config.passkey).toString() === local[0].password) {
+        if(tripledes.encrypt(password, ctx.app.config.passkey).toString() === local[0].password) {
           // 密码正确
           let info = local[0];
           delete info.id;
@@ -151,14 +151,14 @@ class AuthLoginController extends Controller {
     // 检测是否存在该用户
     const check = await ctx.app.mysql.count('user', { student_id: username });
     parse_info.update_time = dayjs().unix();
-    if (check > 0) {
+    if(check > 0) {
       // 存在用户则更新
       const hit = await ctx.app.mysql.update('user', parse_info, {
         where: {
           student_id: username
         }
       });
-      if (hit.affectedRows === 1) {
+      if(hit.affectedRows === 1) {
         // 更新成功
         delete parse_info.password;
         delete parse_info.jw_id;

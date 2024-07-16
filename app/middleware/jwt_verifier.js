@@ -1,0 +1,35 @@
+// app/middleware/jwt_verify.js
+
+// 白名单，过滤不需要鉴权的接口
+const white_list = [
+  '/',
+  '/auth/login'
+];
+
+module.exports = () => {
+  return async function(ctx, next) {
+    if(!white_list.some(item => item == ctx.path)) {
+      let token = ctx.request.header.authorization;
+      if(token && token != 'null') {
+        try {
+          token = token.replace('Bearer ', '');
+          const decode = ctx.app.jwt.verify(token, ctx.app.config.jwt.secret);
+          ctx.user_info = decode;
+          await next();
+        } catch(error) {
+          ctx.body = {
+            code: 401,
+            message: 'token已过期'
+          };
+        }
+      } else {
+        ctx.body = {
+          code: 401,
+          message: 'token已过期'
+        }
+      }
+    } else {
+      await next();
+    }
+  }
+};
