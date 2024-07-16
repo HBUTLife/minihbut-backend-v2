@@ -65,7 +65,7 @@ class AuthLoginController extends Controller {
       } else if (login.status === 200) {
         // 登陆失败，密码错误
         ctx.body = {
-          code: 401,
+          code: 402,
           message: '密码错误'
         };
       }
@@ -100,7 +100,7 @@ class AuthLoginController extends Controller {
         } else {
           // 密码错误
           ctx.body = {
-            code: 401,
+            code: 402,
             message: '密码错误'
           };
         }
