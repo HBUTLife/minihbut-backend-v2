@@ -9,10 +9,9 @@ const white_list = [
 module.exports = () => {
   return async function(ctx, next) {
     if(!white_list.some(item => item == ctx.path)) {
-      let token = ctx.request.header.authorization;
+      const token = ctx.request.header.authorization;
       if(token && token != 'null') {
         try {
-          token = token.replace('Bearer ', '');
           const decode = ctx.app.jwt.verify(token, ctx.app.config.jwt.secret);
           ctx.user_info = decode;
           await next();

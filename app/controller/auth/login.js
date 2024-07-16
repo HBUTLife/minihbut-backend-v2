@@ -52,7 +52,7 @@ class AuthLoginController extends Controller {
             message: '登录成功',
             data: {
               info: info.data,
-              token: ''
+              token: this.signToken(info.data)
             }
           };
         } else if (info.status === 2) {
@@ -94,7 +94,7 @@ class AuthLoginController extends Controller {
             message: '登录成功',
             data: {
               info: info,
-              token: ''
+              token: this.signToken(info)
             }
           };
         } else {
@@ -199,6 +199,16 @@ class AuthLoginController extends Controller {
         };
       }
     }
+  }
+
+  /**
+   * 签名token
+   * @param {object} payload 
+   * @returns 
+   */
+  signToken(payload) {
+    const { ctx } = this;
+    return ctx.app.jwt.sign(payload, ctx.app.config.jwt.secret, ctx.app.config.jwt.expiresIn);
   }
 }
 
