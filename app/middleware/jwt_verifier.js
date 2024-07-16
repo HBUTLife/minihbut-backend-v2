@@ -24,7 +24,7 @@ module.exports = () => {
       } else {
         ctx.body = {
           code: 401,
-          message: 'token已过期'
+          message: '缺少token'
         }
       }
     } else {

@@ -6,7 +6,7 @@ const cryptojs = require('crypto-js');
 const tripledes = require('crypto-js/tripledes');
 
 class AuthService extends Service {
-  async index(username) {
+  async re(username) {
     const { ctx } = this;
     const user = ctx.app.mysql.select('user', {
       where: {

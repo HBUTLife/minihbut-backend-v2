@@ -2,6 +2,7 @@
 
 const { Controller } = require('egg');
 const dayjs = require('dayjs');
+const cryptojs = require('crypto-js');
 const tripledes = require('crypto-js/tripledes');
 
 // 定义创建接口的请求参数规则
@@ -79,16 +80,16 @@ class AuthLoginController extends Controller {
 
       if(local.length > 0) {
         // 拥有该用户，进行比对
-        if(tripledes.encrypt(password, ctx.app.config.passkey).toString() === local[0].password) {
+        if(password === tripledes.decrypt(local[0].password, this.ctx.app.config.passkey).toString(cryptojs.enc.Utf8)) {
           // 密码正确
-          let info = local[0];
-          delete info.id;
-          delete info.password;
-          delete info.jw_id;
-          delete info.jw_uid;
-          delete info.jw_route;
-          delete info.create_time;
-          delete info.update_time;
+          let info = {
+            student_id: local[0].student_id,
+            name: local[0].name,
+            college: local[0].college,
+            class: local[0].class,
+            major: local[0].major,
+            grade: local[0].grade
+          };
           ctx.body = {
             code: 200,
             message: '登录成功',
@@ -101,7 +102,7 @@ class AuthLoginController extends Controller {
           // 密码错误
           ctx.body = {
             code: 402,
-            message: '密码错误'
+            message: '密码错误1'
           };
         }
       } else {
