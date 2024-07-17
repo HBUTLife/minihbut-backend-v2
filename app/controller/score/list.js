@@ -103,9 +103,9 @@ class ScoreListController extends Controller {
         study_type: item.xdxz,
         exam_type: item.kcxz,
         credit: item.xf,
-        student_credit: item.hdxf,
-        grade_point: item.jd,
-        score: item.zhcj,
+        student_credit: item.hdxf.toString(),
+        grade_point: item.xfjd,
+        score: item.yscj,
         detail: item.cjfxms,
         term: term,
         student_id: student_id
