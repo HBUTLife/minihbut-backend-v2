@@ -29,7 +29,8 @@ module.exports = appInfo => {
     login: '/admin/login',
     info: '/admin/cjgl/xscjbbdy/printdgxscj',
     score: '/admin/xsd/xsdcjcx/xsdQueryXscjList',
-    rank: '/admin/cjgl/xscjbbdy/getXscjpm'
+    rank: '/admin/cjgl/xscjbbdy/getXscjpm',
+    exam: '/admin/xsd/kwglXsdKscx/ajaxXsksList'
   };
 
   // add your user config here
