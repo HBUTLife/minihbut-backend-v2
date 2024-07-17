@@ -15,7 +15,7 @@ module.exports = () => {
           const decode = ctx.app.jwt.verify(token, ctx.app.config.jwt.secret);
           ctx.user_info = decode;
           await next();
-        } catch(error) {
+        } catch(err) {
           ctx.body = {
             code: 401,
             message: 'token已过期'

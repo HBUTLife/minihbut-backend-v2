@@ -8,7 +8,7 @@ const tripledes = require('crypto-js/tripledes');
 class AuthService extends Service {
   async re(username) {
     const { ctx } = this;
-    const user = ctx.app.mysql.select('user', {
+    const user = await ctx.app.mysql.select('user', {
       where: {
         student_id: username
       }
@@ -37,7 +37,7 @@ class AuthService extends Service {
 
     if(login.status === 302) {
       // 登录成功，更新 uid, route
-      const hit = ctx.app.mysql.update('user', {
+      const hit = await ctx.app.mysql.update('user', {
         jw_uid: cookie_uid.replace('uid=', ''),
         jw_route: cookie_route.replace('route=', ''),
         update_time: dayjs().unix()
