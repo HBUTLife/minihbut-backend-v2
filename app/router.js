@@ -9,4 +9,5 @@ module.exports = app => {
   router.get('/rank/list', controller.rank.list.index);
   router.get('/exam/list', controller.exam.list.index);
   router.get('/statistic/search', controller.statistic.search.index);
+  router.get('/statistic/detail', controller.statistic.detail.index);
 };

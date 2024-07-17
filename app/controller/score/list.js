@@ -105,7 +105,7 @@ class ScoreListController extends Controller {
         credit: item.xf,
         student_credit: item.hdxf.toString(),
         grade_point: item.xfjd,
-        score: item.yscj,
+        score: parseInt(item.yscj),
         detail: item.cjfxms,
         term: term,
         student_id: student_id
