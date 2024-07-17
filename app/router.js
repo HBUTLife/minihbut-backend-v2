@@ -11,4 +11,5 @@ module.exports = app => {
   router.get('/statistic/search', controller.statistic.search.index);
   router.get('/statistic/detail', controller.statistic.detail.index);
   router.get('/classroom/search', controller.classroom.search.index);
+  router.get('/info/weather', controller.info.weather.index);
 };

@@ -34,21 +34,23 @@ module.exports = appInfo => {
     classroom: '/admin/system/jxzy/jsxx/getZyKjs'
   };
 
-  // add your user config here
-  const userConfig = {
-    // myAppName: 'egg',
-  };
-
-  // 公共 jwt 配置
-  config.jwt = {
-    expiresIn: 365 * 86400 // 365天过期
-  };
-
   // 小程序配置
   config.wx = {
     app_id: 'wx42a9beac92f39a9a',
     app_secret: 'd1562932c12945fbfd02813c518f5092',
     api_url: 'https://api.weixin.qq.com/sns/jscode2session'
+  };
+
+  // 和风天气配置
+  config.qweather = {
+    location: '101200101',
+    key: '8b0048af128f4918acb7ece9154d9bbb',
+    api_url: 'https://devapi.qweather.com/v7/weather/3d'
+  };
+
+  // 公共 jwt 配置
+  config.jwt = {
+    expiresIn: 365 * 86400 // 365天过期
   };
 
   // HttpClient 配置，防止教务系统相应过慢导致出错
@@ -59,7 +61,6 @@ module.exports = appInfo => {
   };
 
   return {
-    ...config,
-    ...userConfig,
+    ...config
   };
 };
