@@ -8,17 +8,17 @@ const createRule = {
 };
 
 class ScoreListController extends Controller {
+  /**
+   * 成绩查询方法
+   */
   async index() {
     const { ctx } = this;
     // 参数校验
     ctx.validate(createRule, ctx.query);
-
     // 获取学期
     const term = ctx.query.term;
-
     // 初始化个人信息
     const user = ctx.user_info;
-
     // 获取登录信息
     const pass = await ctx.app.mysql.select('user', {
       where: {
@@ -29,7 +29,7 @@ class ScoreListController extends Controller {
     try {
       // 成绩获取地址
       const score_base_url = ctx.app.config.jwxt.base + ctx.app.config.jwxt.score;
-      const score_url = score_base_url + `?page.size=300&page.pn=1&startXnxq=${term}&endXnxq=${term}`;
+      const score_url = `${score_base_url}?page.size=300&page.pn=1&startXnxq=${term}&endXnxq=${term}`;
       const result = await ctx.curl(score_url, {
         method: 'GET',
         headers: {
@@ -55,7 +55,7 @@ class ScoreListController extends Controller {
         } else {
           // 重新授权失败
           ctx.body = {
-            code: 500,
+            code: 401,
             message: '重新授权失败'
           };
         }
@@ -70,13 +70,20 @@ class ScoreListController extends Controller {
       });
 
       ctx.body = {
-        code: 200,
-        message: '成绩列表获取成功1',
+        code: 201,
+        message: '成绩列表获取成功',
         data: data
       };
     }
   }
 
+  /**
+   * 成绩信息处理
+   * @param {string} student_id 
+   * @param {string} term 
+   * @param {object} obj 
+   * @returns 
+   */
   async processData(student_id, term, obj) {
     const { ctx } = this;
     // 先删除数据库中原有的数据
@@ -84,7 +91,6 @@ class ScoreListController extends Controller {
       student_id: student_id,
       term: term
     });
-
     // 对获取到的数据进行处理并插入数据库
     let parse_data = [];
     for(const item of obj) {

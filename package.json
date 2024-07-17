@@ -7,6 +7,7 @@
     "declarations": true
   },
   "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
     "crypto-js": "^4.2.0",
     "dayjs": "^1.11.11",
     "egg": "^3.17.5",

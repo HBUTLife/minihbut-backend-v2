@@ -28,7 +28,8 @@ module.exports = appInfo => {
     base: 'https://jwxt.hbut.edu.cn',
     login: '/admin/login',
     info: '/admin/cjgl/xscjbbdy/printdgxscj',
-    score: '/admin/xsd/xsdcjcx/xsdQueryXscjList'
+    score: '/admin/xsd/xsdcjcx/xsdQueryXscjList',
+    rank: '/admin/cjgl/xscjbbdy/getXscjpm'
   };
 
   // add your user config here
@@ -51,7 +52,7 @@ module.exports = appInfo => {
   // HttpClient 配置，防止教务系统相应过慢导致出错
   config.httpclient = {
     request: {
-      timeout: 5000
+      timeout: 20000
     }
   };
 
