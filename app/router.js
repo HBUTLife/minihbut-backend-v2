@@ -8,4 +8,5 @@ module.exports = app => {
   router.get('/score/list', controller.score.list.index);
   router.get('/rank/list', controller.rank.list.index);
   router.get('/exam/list', controller.exam.list.index);
+  router.get('/statistic/search', controller.statistic.search.index);
 };
