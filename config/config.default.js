@@ -30,7 +30,8 @@ module.exports = appInfo => {
     info: '/admin/cjgl/xscjbbdy/printdgxscj',
     score: '/admin/xsd/xsdcjcx/xsdQueryXscjList',
     rank: '/admin/cjgl/xscjbbdy/getXscjpm',
-    exam: '/admin/xsd/kwglXsdKscx/ajaxXsksList'
+    exam: '/admin/xsd/kwglXsdKscx/ajaxXsksList',
+    classroom: '/admin/system/jxzy/jsxx/getZyKjs'
   };
 
   // add your user config here
