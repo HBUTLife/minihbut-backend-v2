@@ -102,7 +102,7 @@ class AuthLoginController extends Controller {
           // 密码错误
           ctx.body = {
             code: 402,
-            message: '密码错误1'
+            message: '密码错误'
           };
         }
       } else {
