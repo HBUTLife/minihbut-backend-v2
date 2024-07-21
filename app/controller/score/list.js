@@ -95,7 +95,7 @@ class ScoreListController extends Controller {
     let parse_data = [];
     for(const item of data) {
       const data = {
-        id: item.id,
+        id: item.id.toLowerCase(),
         name: item.kcmc.replace(/\[[^\]]*\]/g, '').replace('（', '(').replace('）', ')'),
         course_id: item.kcid,
         teacher: item.cjlrjsxm,

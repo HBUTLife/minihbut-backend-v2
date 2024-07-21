@@ -96,7 +96,7 @@ class ExamListController extends Controller {
       const timestamp_end = dayjs(`${time_date} ${time_hour[1]}`).unix();
       // 数据处理
       const data = {
-        id: item.id,
+        id: item.id.toLowerCase(),
         name: item.kcmc,
         batch: item.kspcmc,
         type: item.ksfs,
