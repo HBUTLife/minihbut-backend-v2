@@ -86,11 +86,19 @@ class ScoreListController extends Controller {
    */
   async processData(student_id, term, data) {
     const { ctx } = this;
-    // 先删除数据库中原有的数据
-    await ctx.app.mysql.delete('score', {
-      student_id: student_id,
-      term: term
-    });
+    // 判断是否为全学期，先删除数据库中原有的数据
+    if(term === '001') {
+      // 是
+      await ctx.app.mysql.delete('score', {
+        student_id: student_id
+      });
+    } else {
+      // 否
+      await ctx.app.mysql.delete('score', {
+        student_id: student_id,
+        term: term
+      });
+    }
     // 对获取到的数据进行处理并插入数据库
     let parse_data = [];
     for(const item of data) {
@@ -107,9 +115,10 @@ class ScoreListController extends Controller {
         grade_point: item.xfjd,
         score: parseInt(item.yscj),
         detail: item.cjfxms,
-        term: term,
+        term: item.xnxq,
         student_id: student_id
       };
+      // 插入成绩
       await ctx.app.mysql.insert('score', data);
       parse_data.push(data);
     };
