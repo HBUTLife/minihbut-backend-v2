@@ -43,8 +43,6 @@ class RankListController extends Controller {
         dataType: 'html'
       });
 
-      console.log(result);
-
       if(result.status === 200) {
         // 获取成功
         const data = await this.processData(user.student_id, term, result.data);
