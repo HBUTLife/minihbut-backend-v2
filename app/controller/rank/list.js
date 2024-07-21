@@ -18,7 +18,7 @@ class RankListController extends Controller {
     // 参数校验
     ctx.validate(createRule, ctx.query);
     // 获取学期
-    const term = ctx.query.term;
+    let term = ctx.query.term;
     // 初始化个人信息
     const user = ctx.user_info;
     // 获取登录信息
@@ -27,6 +27,10 @@ class RankListController extends Controller {
         student_id: user.student_id
       }
     });
+    // 判断全学期
+    if(term === '001') {
+      term = '';
+    }
 
     try {
       const rank_base_url = ctx.app.config.jwxt.base + ctx.app.config.jwxt.rank;
@@ -101,6 +105,10 @@ class RankListController extends Controller {
    */
   async processData(student_id, term, data) {
     const { ctx } = this;
+    // 判断全学期
+    if(term === '') {
+      term = '001';
+    }
     // 使用 Cheerio 加载 HTML 字符串
     const $ = cheerio.load(data.toString());
     // 选择所有 <td> 标签
