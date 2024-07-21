@@ -35,7 +35,7 @@ module.exports = appInfo => {
   };
 
   // 小程序配置
-  config.wx = {
+  config.wechat = {
     app_id: 'wx42a9beac92f39a9a',
     app_secret: 'd1562932c12945fbfd02813c518f5092',
     api_url: 'https://api.weixin.qq.com/sns/jscode2session'

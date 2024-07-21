@@ -5,6 +5,9 @@ module.exports = app => {
   const { router, controller } = app;
   router.get('/', controller.home.index);
   router.post('/auth/login', controller.auth.login.index);
+  router.post('/auth/wechat/login', controller.auth.wechat.login.index);
+  router.post('/auth/wechat/bind', controller.auth.wechat.bind.index);
+  router.post('/auth/wechat/unbind', controller.auth.wechat.unbind.index);
   router.get('/score/list', controller.score.list.index);
   router.get('/rank/list', controller.rank.list.index);
   router.get('/exam/list', controller.exam.list.index);

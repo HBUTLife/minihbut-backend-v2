@@ -3,7 +3,8 @@
 // 白名单，过滤不需要鉴权的接口
 const white_list = [
   '/',
-  '/auth/login'
+  '/auth/login',
+  '/auth/wechat/login'
 ];
 
 module.exports = () => {
