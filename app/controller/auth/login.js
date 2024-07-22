@@ -88,7 +88,8 @@ class AuthLoginController extends Controller {
             college: local[0].college,
             class: local[0].class,
             major: local[0].major,
-            grade: local[0].grade
+            grade: local[0].grade,
+            grade_enter: local[0].grade_enter
           };
           ctx.body = {
             code: 200,
@@ -145,6 +146,7 @@ class AuthLoginController extends Controller {
       class: origin_info.bjmc,
       major: origin_info.zymc,
       grade: origin_info.sznj,
+      grade_enter: origin_info.rxnj,
       jw_id: origin_info.id,
       jw_uid: cookie_uid.replace('uid=', ''),
       jw_route: cookie_route.replace('route=', '')
