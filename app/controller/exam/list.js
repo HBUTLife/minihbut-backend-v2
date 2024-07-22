@@ -40,7 +40,10 @@ class ExamListController extends Controller {
 
       if(result.status === 200) {
         // 获取成功
-        const data = await this.processData(user.student_id, term, result.data.results);
+        let data = [];
+        if(result.data.total > 0) {
+          data = await this.processData(user.student_id, term, result.data.results);
+        }
 
         ctx.body = {
           code: 200,

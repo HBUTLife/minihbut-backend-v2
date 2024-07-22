@@ -46,13 +46,15 @@ class ClassroomSearchController extends Controller {
       if(result.status === 200) {
         // 获取成功
         let parse_data = [];
-        for(const item of result.data.results) {
-          parse_data.push({
-            id: parseInt(item.id),
-            name: item.jsmc,
-            type: parseInt(item.jslx),
-            seat: item.zdskrnrs
-          });
+        if(result.data.total > 0) {
+          for(const item of result.data.results) {
+            parse_data.push({
+              id: parseInt(item.id),
+              name: item.jsmc,
+              type: parseInt(item.jslx),
+              seat: item.zdskrnrs
+            });
+          }
         }
 
         ctx.body = {
@@ -80,6 +82,8 @@ class ClassroomSearchController extends Controller {
         code: 500,
         message: '教务系统无法访问'
       };
+
+      console.log(err);
     }
   }
 }

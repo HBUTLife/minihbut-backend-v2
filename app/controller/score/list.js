@@ -40,7 +40,10 @@ class ScoreListController extends Controller {
 
       if(result.status === 200) {
         // 获取成功
-        const data = await this.processData(user.student_id, term, result.data.results);
+        let data = [];
+        if(result.data.total > 0) {
+          data = await this.processData(user.student_id, term, result.data.results);
+        }
         ctx.body = {
           code: 200,
           message: '成绩列表获取成功',
@@ -120,10 +123,9 @@ class ScoreListController extends Controller {
         teacher: item.cjlrjsxm,
         type: item.kcxz,
         study_type: item.xdxz,
-        exam_type: item.kcxz,
+        exam_type: item.ksxs,
         credit: item.xf,
         student_credit: item.hdxf.toString(),
-        grade_point: item.xfjd,
         score: parseInt(item.yscj),
         detail: item.cjfxms,
         term: item.xnxq,
