@@ -90,7 +90,7 @@ class RankListController extends Controller {
       ctx.body = {
         code: 201,
         message: '排名列表获取成功',
-        data: data
+        data: data[0]
       };
     }
   }
