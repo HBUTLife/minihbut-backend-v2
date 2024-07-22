@@ -25,7 +25,7 @@ class AuthWechatLoginController extends Controller {
         dataType: 'json'
       });
 
-      if(result.data.errcode === 0) {
+      if(result.data.openid) {
         // 获取成功，与数据库内数据进行比对
         const hit = await ctx.app.mysql.select('user', {
           where: {
