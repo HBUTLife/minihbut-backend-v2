@@ -80,12 +80,22 @@ class RankListController extends Controller {
       }
     } catch(err) {
       // 教务系统无法访问，展示数据库内数据
-      const data = await ctx.app.mysql.select('rank', {
-        where: {
-          student_id: user.student_id,
-          term: term
-        }
-      });
+      let data;
+      if(term !== '') {
+        data = await ctx.app.mysql.select('rank', {
+          where: {
+            student_id: user.student_id,
+            term: term
+          }
+        });
+      } else {
+        data = await ctx.app.mysql.select('rank', {
+          where: {
+            student_id: user.student_id,
+            term: '001'
+          }
+        });
+      }
 
       ctx.body = {
         code: 201,
