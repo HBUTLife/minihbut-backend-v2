@@ -17,4 +17,5 @@ module.exports = app => {
   router.get('/info/weather', controller.info.weather.index);
   router.get('/info/other', controller.info.other.index);
   router.get('/info/term', controller.info.term.index);
+  router.get('/info/article', controller.info.article.index);
 };

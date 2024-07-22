@@ -6,7 +6,8 @@ const white_list = [
   '/auth/login',
   '/auth/wechat/login',
   '/info/weather',
-  '/info/other'
+  '/info/other',
+  '/info/article'
 ];
 
 module.exports = () => {
