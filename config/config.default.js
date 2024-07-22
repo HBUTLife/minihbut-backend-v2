@@ -53,13 +53,6 @@ module.exports = appInfo => {
     expiresIn: 365 * 86400 // 365天过期
   };
 
-  // HttpClient 配置，防止教务系统相应过慢导致出错
-  config.httpclient = {
-    request: {
-      timeout: 20000
-    }
-  };
-
   return {
     ...config
   };
