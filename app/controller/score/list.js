@@ -62,12 +62,23 @@ class ScoreListController extends Controller {
       }
     } catch(err) {
       // 教务系统无法访问，展示数据库内数据
-      const data = await ctx.app.mysql.select('score', {
-        where: {
-          term: term,
-          student_id: user.student_id
-        }
-      });
+      let data;
+      if(term === '001') {
+        // 全学期
+        data = await ctx.app.mysql.select('score', {
+          where: {
+            student_id: user.student_id
+          }
+        });
+      } else {
+        // 指定学期
+        data = await ctx.app.mysql.select('score', {
+          where: {
+            term: term,
+            student_id: user.student_id
+          }
+        });
+      }
 
       ctx.body = {
         code: 201,
