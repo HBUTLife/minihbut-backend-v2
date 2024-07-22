@@ -23,7 +23,11 @@ class InfoWeatherController extends Controller {
       if(local[0].last_update + 3600 < dayjs().unix()) {
         // 已经过一小时，更新数据
         const data = await this.getWeather();
-        const hit = await ctx.app.mysql.update('weather', data);
+        const hit = await ctx.app.mysql.update('weather', data, {
+          where: {
+            date: today
+          }
+        });
 
         if(hit.affectedRows === 1) {
           // 更新成功
