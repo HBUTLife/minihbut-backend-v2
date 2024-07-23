@@ -41,7 +41,7 @@ class RankListController extends Controller {
           'cookie': `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
         },
         dataType: 'html',
-        timeout: 10000
+        timeout: 15000
       });
 
       if(result.status === 200) {
