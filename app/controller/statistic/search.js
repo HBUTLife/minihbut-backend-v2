@@ -23,7 +23,7 @@ class StatisticSearchController extends Controller {
     let search_list = [];
     result.forEach(item => {
       const count = search_list.filter(ele => ele.name === item.name && ele.teacher === item.teacher);
-      if(count.length === 0) {
+      if(count.length === 0 && item.teacher) {
         // 不存在则添加
         search_list.push({
           name: item.name,
