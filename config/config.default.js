@@ -34,6 +34,13 @@ module.exports = appInfo => {
     classroom: '/admin/system/jxzy/jsxx/getZyKjs'
   };
 
+  // idaas连接配置
+  config.idaas = {
+    base: 'https://idaas-idp.hbut.edu.cn',
+    login: '/api/v1/idaas-idp.hbut.edu.cn/login',
+    sso: '/sso/tn-b6844f43ad554d15aaa73f4ed4319a52/ai-b1d8f5fe47cb42cebcef97a57c8790dc/cas'
+  };
+
   // 小程序配置
   config.wechat = {
     app_id: 'wx42a9beac92f39a9a',
@@ -50,8 +57,12 @@ module.exports = appInfo => {
 
   // 公共 jwt 配置
   config.jwt = {
+    secret: 'qbiWBcUR9qEEnNLkoQ7Yk4ccpX6jcTuz',
     expiresIn: 365 * 86400 // 365天过期
   };
+
+  // 密码加密配置
+  config.passkey = 'JGwjz4uunJDxbtcntZzaGm3mPukpnoHP';
 
   return {
     ...config
