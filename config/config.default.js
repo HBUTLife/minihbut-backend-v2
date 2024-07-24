@@ -58,7 +58,7 @@ module.exports = appInfo => {
   // 公共 jwt 配置
   config.jwt = {
     secret: 'qbiWBcUR9qEEnNLkoQ7Yk4ccpX6jcTuz',
-    expiresIn: 365 * 86400 // 365天过期
+    expiresIn: 365 * 86400
   };
 
   // 密码加密配置

@@ -13,7 +13,6 @@ run/
 *.un~
 typings/
 .nyc_output/
-run/
 test/
 config/config.local.js
 config/config.prod.js
