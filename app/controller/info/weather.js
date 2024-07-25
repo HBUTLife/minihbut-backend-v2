@@ -18,9 +18,9 @@ class InfoWeatherController extends Controller {
       }
     });
 
-    if(local.length > 0) {
+    if (local.length > 0) {
       // 已存在
-      if(local[0].last_update + 3600 < dayjs().unix()) {
+      if (local[0].last_update + 3600 < dayjs().unix()) {
         // 已经过一小时，更新数据
         const data = await this.getWeather();
         const hit = await ctx.app.mysql.update('weather', data, {
@@ -29,7 +29,7 @@ class InfoWeatherController extends Controller {
           }
         });
 
-        if(hit.affectedRows === 1) {
+        if (hit.affectedRows === 1) {
           // 更新成功
           ctx.body = {
             code: 200,
@@ -56,7 +56,7 @@ class InfoWeatherController extends Controller {
       const data = await this.getWeather();
       const hit = await ctx.app.mysql.insert('weather', data);
 
-      if(hit.affectedRows === 1) {
+      if (hit.affectedRows === 1) {
         // 插入成功
         ctx.body = {
           code: 200,
@@ -75,7 +75,7 @@ class InfoWeatherController extends Controller {
 
   /**
    * 接口获取天气方法
-   * @returns 
+   * @returns
    */
   async getWeather() {
     const { ctx } = this;
@@ -83,8 +83,8 @@ class InfoWeatherController extends Controller {
     const result = await ctx.curl(api, {
       dataType: 'json'
     });
-    
-    if(result.status === 200) {
+
+    if (result.status === 200) {
       // 获取成功
       const data = result.data.daily[0];
       const list = {

@@ -18,12 +18,15 @@ class StatisticSearchController extends Controller {
     // 获取关键词
     const keyword = ctx.query.keyword;
     // 查询
-    const result = await this.app.mysql.query('SELECT * FROM score WHERE name LIKE ? OR teacher LIKE ?', [`%${keyword}%`, `%${keyword}%`]);
+    const result = await this.app.mysql.query('SELECT * FROM score WHERE name LIKE ? OR teacher LIKE ?', [
+      `%${keyword}%`,
+      `%${keyword}%`
+    ]);
     // 遍历查重并格式化
     let search_list = [];
-    result.forEach(item => {
-      const count = search_list.filter(ele => ele.name === item.name && ele.teacher === item.teacher);
-      if(count.length === 0 && item.teacher) {
+    result.forEach((item) => {
+      const count = search_list.filter((ele) => ele.name === item.name && ele.teacher === item.teacher);
+      if (count.length === 0 && item.teacher) {
         // 不存在则添加
         search_list.push({
           name: item.name,

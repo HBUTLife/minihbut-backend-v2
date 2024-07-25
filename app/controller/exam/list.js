@@ -33,15 +33,15 @@ class ExamListController extends Controller {
       const result = await ctx.curl(exam_url, {
         method: 'GET',
         headers: {
-          'cookie': `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
+          cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
         },
         dataType: 'json'
       });
 
-      if(result.status === 200) {
+      if (result.status === 200) {
         // 获取成功
         let data = [];
-        if(result.data.total > 0) {
+        if (result.data.total > 0) {
           data = await this.processData(user.student_id, term, result.data.results);
         }
 
@@ -53,7 +53,7 @@ class ExamListController extends Controller {
       } else {
         // 登录过期，重新登录获取
         const reauth = await ctx.service.auth.re(user.student_id);
-        if(reauth) {
+        if (reauth) {
           // 重新授权成功重新执行
           await this.index();
         } else {
@@ -64,7 +64,7 @@ class ExamListController extends Controller {
           };
         }
       }
-    } catch(err) {
+    } catch (err) {
       // 教务系统无法访问，展示数据库内数据
       const data = await ctx.app.mysql.select('exam', {
         where: {
@@ -90,7 +90,7 @@ class ExamListController extends Controller {
     });
     // 对获取到的数据进行处理并插入数据库
     let parse_data = [];
-    for(const item of data) {
+    for (const item of data) {
       // 开始、结束时间戳处理
       const time = item.kssj;
       const time_date = time.split(' ')[0];

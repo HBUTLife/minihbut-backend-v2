@@ -28,7 +28,7 @@ class RankListController extends Controller {
       }
     });
     // 判断全学期
-    if(term === '001') {
+    if (term === '001') {
       term = '';
     }
 
@@ -38,22 +38,22 @@ class RankListController extends Controller {
       const result = await ctx.curl(rank_url, {
         method: 'GET',
         headers: {
-          'cookie': `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
+          cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
         },
         dataType: 'html',
         timeout: 15000
       });
 
-      if(result.status === 200) {
+      if (result.status === 200) {
         // 获取成功
         const data = await this.processData(user.student_id, term, result.data);
-        if(data.status === 1) {
+        if (data.status === 1) {
           ctx.body = {
             code: 200,
             message: '排名列表获取成功',
             data: data.data
           };
-        } else if(data.status === 2) {
+        } else if (data.status === 2) {
           ctx.body = {
             code: 500,
             message: '排名更新失败'
@@ -67,7 +67,7 @@ class RankListController extends Controller {
       } else {
         // 登录过期，重新登录获取
         const reauth = await ctx.service.auth.re(user.student_id);
-        if(reauth) {
+        if (reauth) {
           // 重新授权成功重新执行
           await this.index();
         } else {
@@ -78,10 +78,10 @@ class RankListController extends Controller {
           };
         }
       }
-    } catch(err) {
+    } catch (err) {
       // 教务系统无法访问，展示数据库内数据
       let data;
-      if(term !== '') {
+      if (term !== '') {
         data = await ctx.app.mysql.select('rank', {
           where: {
             student_id: user.student_id,
@@ -107,15 +107,15 @@ class RankListController extends Controller {
 
   /**
    * 排名信息处理
-   * @param {string} student_id 
-   * @param {string} term 
-   * @param {object} data 
-   * @returns 
+   * @param {string} student_id
+   * @param {string} term
+   * @param {object} data
+   * @returns
    */
   async processData(student_id, term, data) {
     const { ctx } = this;
     // 判断全学期
-    if(term === '') {
+    if (term === '') {
       term = '001';
     }
     // 使用 Cheerio 加载 HTML 字符串
@@ -148,8 +148,8 @@ class RankListController extends Controller {
       student_id: student_id,
       term: term
     });
-    
-    if(count > 0) {
+
+    if (count > 0) {
       // 数据库内有数据，更新数据
       const hit = await ctx.app.mysql.update('rank', parse_data, {
         where: {
@@ -158,7 +158,7 @@ class RankListController extends Controller {
         }
       });
 
-      if(hit.affectedRows === 1) {
+      if (hit.affectedRows === 1) {
         // 更新成功
         return {
           status: 1,
@@ -171,8 +171,8 @@ class RankListController extends Controller {
     } else {
       // 数据库内无数据，插入数据
       const hit = await ctx.app.mysql.insert('rank', parse_data);
-      
-      if(hit.affectedRows === 1) {
+
+      if (hit.affectedRows === 1) {
         // 插入成功
         return {
           status: 1,

@@ -38,16 +38,16 @@ class ClassroomSearchController extends Controller {
       const result = await ctx.curl(classroom_url, {
         method: 'GET',
         headers: {
-          'cookie': `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
+          cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
         },
         dataType: 'json'
       });
 
-      if(result.status === 200) {
+      if (result.status === 200) {
         // 获取成功
         let parse_data = [];
-        if(result.data.total > 0) {
-          for(const item of result.data.results) {
+        if (result.data.total > 0) {
+          for (const item of result.data.results) {
             parse_data.push({
               id: parseInt(item.id),
               name: item.jsmc,
@@ -65,7 +65,7 @@ class ClassroomSearchController extends Controller {
       } else {
         // 登录过期，重新登录获取
         const reauth = await ctx.service.auth.re(user.student_id);
-        if(reauth) {
+        if (reauth) {
           // 重新授权成功重新执行
           await this.index();
         } else {
@@ -76,7 +76,7 @@ class ClassroomSearchController extends Controller {
           };
         }
       }
-    } catch(err) {
+    } catch (err) {
       // 教务系统无法访问，返回错误
       ctx.body = {
         code: 500,

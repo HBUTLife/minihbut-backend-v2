@@ -20,7 +20,10 @@
     "egg-bin": "6",
     "egg-mock": "5",
     "eslint": "8",
-    "eslint-config-egg": "13"
+    "eslint-config-egg": "13",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "3.3.3"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -33,7 +36,8 @@
     "test:local": "egg-bin test",
     "cov": "egg-bin cov",
     "lint": "eslint .",
-    "ci": "npm run lint && npm run cov"
+    "ci": "npm run lint && npm run cov",
+    "format": "prettier . --write"
   },
   "repository": {
     "type": "git",

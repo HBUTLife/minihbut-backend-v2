@@ -22,12 +22,12 @@ class AuthService extends Service {
     const enter = await ctx.curl(login_url);
     const cookies = enter.headers['set-cookie'];
     const cookie_uid = cookies[0].split(';')[0];
-    const cookie_route =  cookies[1].split(';')[0];
+    const cookie_route = cookies[1].split(';')[0];
     // 请求登录
     const login = await ctx.curl(login_url, {
       method: 'POST',
       headers: {
-        'cookie': `${cookie_uid}; ${cookie_route}`
+        cookie: `${cookie_uid}; ${cookie_route}`
       },
       data: {
         username: username,
@@ -35,19 +35,23 @@ class AuthService extends Service {
       }
     });
 
-    if(login.status === 302) {
+    if (login.status === 302) {
       // 登录成功，更新 uid, route
-      const hit = await ctx.app.mysql.update('user', {
-        jw_uid: cookie_uid.replace('uid=', ''),
-        jw_route: cookie_route.replace('route=', ''),
-        update_time: dayjs().unix()
-      }, {
-        where: {
-          student_id: username
+      const hit = await ctx.app.mysql.update(
+        'user',
+        {
+          jw_uid: cookie_uid.replace('uid=', ''),
+          jw_route: cookie_route.replace('route=', ''),
+          update_time: dayjs().unix()
+        },
+        {
+          where: {
+            student_id: username
+          }
         }
-      });
+      );
 
-      if(hit.affectedRows === 1) {
+      if (hit.affectedRows === 1) {
         // 更新成功
         return true;
       } else {

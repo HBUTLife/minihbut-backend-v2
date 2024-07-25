@@ -25,7 +25,7 @@ class AuthWechatLoginController extends Controller {
         dataType: 'json'
       });
 
-      if(result.data.openid) {
+      if (result.data.openid) {
         // 获取成功，与数据库内数据进行比对
         const hit = await ctx.app.mysql.select('user', {
           where: {
@@ -33,7 +33,7 @@ class AuthWechatLoginController extends Controller {
           }
         });
 
-        if(hit.length > 0) {
+        if (hit.length > 0) {
           // 有绑定用户，进行登录
           const user = hit[0];
           const info = {
@@ -67,7 +67,7 @@ class AuthWechatLoginController extends Controller {
           message: '未能成功获取OpenID'
         };
       }
-    } catch(err) {
+    } catch (err) {
       // 服务器连接微信接口失败
       ctx.body = {
         code: 500,
@@ -78,8 +78,8 @@ class AuthWechatLoginController extends Controller {
 
   /**
    * 签名token
-   * @param {object} payload 
-   * @returns 
+   * @param {object} payload
+   * @returns
    */
   signToken(payload) {
     const { ctx } = this;

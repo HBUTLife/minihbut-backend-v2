@@ -11,15 +11,19 @@ class AuthWechatUnbindController extends Controller {
     // 初始化个人信息
     const user = ctx.user_info;
     // 更新数据库
-    const hit = await ctx.app.mysql.update('user', {
-      wx_openid: ''
-    }, {
-      where: {
-        student_id: user.student_id
+    const hit = await ctx.app.mysql.update(
+      'user',
+      {
+        wx_openid: ''
+      },
+      {
+        where: {
+          student_id: user.student_id
+        }
       }
-    });
+    );
 
-    if(hit.affectedRows === 1) {
+    if (hit.affectedRows === 1) {
       // 解绑成功
       ctx.body = {
         code: 200,

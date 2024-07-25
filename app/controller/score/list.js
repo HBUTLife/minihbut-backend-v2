@@ -33,15 +33,15 @@ class ScoreListController extends Controller {
       const result = await ctx.curl(score_url, {
         method: 'GET',
         headers: {
-          'cookie': `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
+          cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
         },
         dataType: 'json'
       });
 
-      if(result.status === 200) {
+      if (result.status === 200) {
         // 获取成功
         let data = [];
-        if(result.data.total > 0) {
+        if (result.data.total > 0) {
           data = await this.processData(user.student_id, term, result.data.results);
         }
         ctx.body = {
@@ -52,7 +52,7 @@ class ScoreListController extends Controller {
       } else {
         // 登录过期，重新登录获取
         const reauth = await ctx.service.auth.re(user.student_id);
-        if(reauth) {
+        if (reauth) {
           // 重新授权成功重新执行
           await this.index();
         } else {
@@ -63,10 +63,10 @@ class ScoreListController extends Controller {
           };
         }
       }
-    } catch(err) {
+    } catch (err) {
       // 教务系统无法访问，展示数据库内数据
       let data;
-      if(term === '001') {
+      if (term === '001') {
         // 全学期
         data = await ctx.app.mysql.select('score', {
           where: {
@@ -93,15 +93,15 @@ class ScoreListController extends Controller {
 
   /**
    * 成绩信息处理
-   * @param {string} student_id 
-   * @param {string} term 
-   * @param {object} data 
-   * @returns 
+   * @param {string} student_id
+   * @param {string} term
+   * @param {object} data
+   * @returns
    */
   async processData(student_id, term, data) {
     const { ctx } = this;
     // 判断是否为全学期，先删除数据库中原有的数据
-    if(term === '001') {
+    if (term === '001') {
       // 是
       await ctx.app.mysql.delete('score', {
         student_id: student_id
@@ -115,10 +115,13 @@ class ScoreListController extends Controller {
     }
     // 对获取到的数据进行处理并插入数据库
     let parse_data = [];
-    for(const item of data) {
+    for (const item of data) {
       const data = {
         id: item.id.toLowerCase(),
-        name: item.kcmc.replace(/\[[^\]]*\]/g, '').replace('（', '(').replace('）', ')'),
+        name: item.kcmc
+          .replace(/\[[^\]]*\]/g, '')
+          .replace('（', '(')
+          .replace('）', ')'),
         course_id: item.kcid,
         teacher: item.cjlrjsxm,
         type: item.kcxz,
@@ -134,7 +137,7 @@ class ScoreListController extends Controller {
       // 插入成绩
       await ctx.app.mysql.insert('score', data);
       parse_data.push(data);
-    };
+    }
 
     return parse_data;
   }

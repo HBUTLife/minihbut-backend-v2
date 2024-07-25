@@ -26,20 +26,24 @@ class AuthWechatBindController extends Controller {
         method: 'GET',
         dataType: 'json'
       });
-      
+
       console.log(result.data);
 
-      if(result.data.openid) {
+      if (result.data.openid) {
         // 获取成功，保存至数据库进行绑定
-        const hit = await ctx.app.mysql.update('user', {
-          wx_openid: result.data.openid
-        }, {
-          where: {
-            student_id: user.student_id
+        const hit = await ctx.app.mysql.update(
+          'user',
+          {
+            wx_openid: result.data.openid
+          },
+          {
+            where: {
+              student_id: user.student_id
+            }
           }
-        });
+        );
 
-        if(hit.affectedRows === 1) {
+        if (hit.affectedRows === 1) {
           // 更新成功
           ctx.body = {
             code: 200,
@@ -59,7 +63,7 @@ class AuthWechatBindController extends Controller {
           message: '未能成功获取OpenID'
         };
       }
-    } catch(err) {
+    } catch (err) {
       // 服务器连接微信接口失败
       ctx.body = {
         code: 500,

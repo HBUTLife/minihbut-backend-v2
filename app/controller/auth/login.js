@@ -30,12 +30,12 @@ class AuthLoginController extends Controller {
       const enter = await ctx.curl(login_url);
       const cookies = enter.headers['set-cookie'];
       const cookie_uid = cookies[0].split(';')[0];
-      const cookie_route =  cookies[1].split(';')[0];
+      const cookie_route = cookies[1].split(';')[0];
       // 请求登录
       const login = await ctx.curl(login_url, {
         method: 'POST',
         headers: {
-          'cookie': `${cookie_uid}; ${cookie_route}`
+          cookie: `${cookie_uid}; ${cookie_route}`
         },
         data: {
           username: username,
@@ -43,10 +43,10 @@ class AuthLoginController extends Controller {
         }
       });
 
-      if(login.status === 302) {
+      if (login.status === 302) {
         // 登录成功，存入/更新信息
         const info = await this.processInfo(username, password, cookie_uid, cookie_route);
-        if(info.status === 1) {
+        if (info.status === 1) {
           // 存入/更新信息成功
           ctx.body = {
             code: 200,
@@ -70,7 +70,7 @@ class AuthLoginController extends Controller {
           message: '密码错误'
         };
       }
-    } catch(err) {
+    } catch (err) {
       // 教务系统无法访问，根据数据库内信息比对登录
       const local = await ctx.app.mysql.select('user', {
         where: {
@@ -78,9 +78,11 @@ class AuthLoginController extends Controller {
         }
       });
 
-      if(local.length > 0) {
+      if (local.length > 0) {
         // 拥有该用户，进行比对
-        if(password === tripledes.decrypt(local[0].password, this.ctx.app.config.passkey).toString(cryptojs.enc.Utf8)) {
+        if (
+          password === tripledes.decrypt(local[0].password, this.ctx.app.config.passkey).toString(cryptojs.enc.Utf8)
+        ) {
           // 密码正确
           let info = {
             student_id: local[0].student_id,
@@ -118,11 +120,11 @@ class AuthLoginController extends Controller {
 
   /**
    * 处理个人信息
-   * @param {string} username 
-   * @param {string} password 
-   * @param {string} cookie_uid 
-   * @param {string} cookie_route 
-   * @returns 
+   * @param {string} username
+   * @param {string} password
+   * @param {string} cookie_uid
+   * @param {string} cookie_route
+   * @returns
    */
   async processInfo(username, password, cookie_uid, cookie_route) {
     const { ctx } = this;
@@ -131,7 +133,7 @@ class AuthLoginController extends Controller {
     const info = await ctx.curl(info_url, {
       method: 'GET',
       headers: {
-        'cookie': `${cookie_uid}; ${cookie_route}`
+        cookie: `${cookie_uid}; ${cookie_route}`
       },
       dataType: 'json'
     });
@@ -154,14 +156,14 @@ class AuthLoginController extends Controller {
     // 检测是否存在该用户
     const check = await ctx.app.mysql.count('user', { student_id: username });
     parse_info.update_time = dayjs().unix();
-    if(check > 0) {
+    if (check > 0) {
       // 存在用户则更新
       const hit = await ctx.app.mysql.update('user', parse_info, {
         where: {
           student_id: username
         }
       });
-      if(hit.affectedRows === 1) {
+      if (hit.affectedRows === 1) {
         // 更新成功
         delete parse_info.password;
         delete parse_info.jw_id;
@@ -206,8 +208,8 @@ class AuthLoginController extends Controller {
 
   /**
    * 签名token
-   * @param {object} payload 
-   * @returns 
+   * @param {object} payload
+   * @returns
    */
   signToken(payload) {
     const { ctx } = this;

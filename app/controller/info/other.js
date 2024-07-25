@@ -24,7 +24,7 @@ class InfoOtherController extends Controller {
       }
     });
 
-    if(result.length > 0) {
+    if (result.length > 0) {
       ctx.body = {
         code: 200,
         message: '获取成功',

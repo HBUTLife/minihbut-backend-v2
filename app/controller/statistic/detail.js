@@ -31,7 +31,7 @@ class StatisticDetailController extends Controller {
     const total_number = result.length;
 
     // 样本量少于30不予展示
-    if(total_number < 30) {
+    if (total_number < 30) {
       this.ctx.body = {
         code: 416,
         message: '给分统计样本量少于30'
@@ -46,15 +46,15 @@ class StatisticDetailController extends Controller {
     let section5 = 0; // 60分以下计数
     let total_score = 0; // 总分
 
-    for(const item of result) {
+    for (const item of result) {
       let score = item.score;
-      if(score >= 90) {
+      if (score >= 90) {
         section1++;
-      } else if(score < 90 && score >= 80) {
+      } else if (score < 90 && score >= 80) {
         section2++;
-      } else if(score < 80 && score >= 70) {
+      } else if (score < 80 && score >= 70) {
         section3++;
-      } else if(score < 70 && score >= 60) {
+      } else if (score < 70 && score >= 60) {
         section4++;
       } else {
         section5++;
@@ -69,11 +69,11 @@ class StatisticDetailController extends Controller {
         total_number: total_number, // 样本量
         highest_score: result[0].score, // 最高分
         average_score: (total_score / total_number).toFixed(2), // 平均分，保留2位小数
-        up_90: (section1 / total_number * 100).toFixed(2).toString() + '%', // 90分以上比例
-        between_80_90: (section2 / total_number * 100).toFixed(2).toString() + '%', // 80-90分比例
-        between_70_80: (section3 / total_number * 100).toFixed(2).toString() + '%', // 70-80分比例
-        between_60_70: (section4 / total_number * 100).toFixed(2).toString() + '%', // 60-70分比例
-        down_60: (section5 / total_number * 100).toFixed(2).toString() + '%' // 60分以下比例
+        up_90: ((section1 / total_number) * 100).toFixed(2).toString() + '%', // 90分以上比例
+        between_80_90: ((section2 / total_number) * 100).toFixed(2).toString() + '%', // 80-90分比例
+        between_70_80: ((section3 / total_number) * 100).toFixed(2).toString() + '%', // 70-80分比例
+        between_60_70: ((section4 / total_number) * 100).toFixed(2).toString() + '%', // 60-70分比例
+        down_60: ((section5 / total_number) * 100).toFixed(2).toString() + '%' // 60分以下比例
       }
     };
   }

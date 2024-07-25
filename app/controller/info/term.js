@@ -14,9 +14,9 @@ class InfoTermController extends Controller {
       const result = await ctx.app.mysql.select('term', { orders: [['id', 'desc']] });
       // 获取成功，根据用户入学年级进行处理
       let term_list = [];
-      for(const item of result) {
+      for (const item of result) {
         const start = parseInt(item.name.split('-')[0]);
-        if(start >= user.grade_enter) {
+        if (start >= user.grade_enter) {
           term_list.push(item);
         }
       }
@@ -25,7 +25,7 @@ class InfoTermController extends Controller {
         message: '学期列表获取成功',
         data: term_list
       };
-    } catch(err) {
+    } catch (err) {
       // 获取失败
       ctx.body = {
         code: 500,
