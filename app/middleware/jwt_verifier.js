@@ -5,7 +5,7 @@ const white_list = ['/', '/auth/login', '/auth/wechat/login', '/info/weather', '
 
 module.exports = () => {
   return async function (ctx, next) {
-    if (!white_list.some((item) => item == ctx.path)) {
+    if (!white_list.some(item => item == ctx.path)) {
       const token = ctx.request.header.authorization;
       if (token && token != 'null') {
         try {

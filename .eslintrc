@@ -4,10 +4,7 @@
     "plugin:prettier/recommended"
   ],
   "root": true,
-  "plugins": [
-    "prettier",
-    "eslint-plugin-prettier"
-  ],
+  "plugins": ["prettier", "eslint-plugin-prettier"],
   "rules": {
     "prettier/prettier": [
       "warn",
@@ -17,12 +14,13 @@
         "useTabs": false,
         "semi": true,
         "singleQuote": true,
-        "jsxSingleQuote": false,
-        "jsxBracketSameLine": true,
         "trailingComma": "none",
         "bracketSpacing": true,
-        "endOfLine": "auto"
+        "endOfLine": "auto",
+        "arrowParens": "avoid"
       }
     ]
   }
+
+
 }
