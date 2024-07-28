@@ -66,7 +66,7 @@ class RankListController extends Controller {
         }
       } else {
         // 登录过期，重新登录获取
-        const reauth = await ctx.service.auth.re(user.student_id);
+        const reauth = await ctx.service.auth.idaas(user.student_id);
         if (reauth) {
           // 重新授权成功重新执行
           await this.index();
@@ -85,7 +85,7 @@ class RankListController extends Controller {
         data = await ctx.app.mysql.select('rank', {
           where: {
             student_id: user.student_id,
-            term: term
+            term
           }
         });
       } else {
@@ -107,10 +107,10 @@ class RankListController extends Controller {
 
   /**
    * 排名信息处理
-   * @param {string} student_id
-   * @param {string} term
-   * @param {object} data
-   * @returns
+   * @param {string} student_id 学号
+   * @param {string} term 学期
+   * @param {object} data 数据
+   * @return {object} 返回 status, data
    */
   async processData(student_id, term, data) {
     const { ctx } = this;
@@ -131,8 +131,8 @@ class RankListController extends Controller {
     });
     // 格式化数据
     const parse_data = {
-      student_id: student_id,
-      term: term,
+      student_id,
+      term,
       average_grade_point: tdContents[6].replace('平均学分绩点：', '').replace('    ', ''),
       average_score: tdContents[7].replace('算术平均分：', ''),
       grade_point_college: tdContents[10],
@@ -145,16 +145,16 @@ class RankListController extends Controller {
     };
     // 检测是否存在数据
     const count = await ctx.app.mysql.count('rank', {
-      student_id: student_id,
-      term: term
+      student_id,
+      term
     });
 
     if (count > 0) {
       // 数据库内有数据，更新数据
       const hit = await ctx.app.mysql.update('rank', parse_data, {
         where: {
-          student_id: student_id,
-          term: term
+          student_id,
+          term
         }
       });
 
@@ -164,25 +164,22 @@ class RankListController extends Controller {
           status: 1,
           data: parse_data
         };
-      } else {
-        // 更新失败
-        return { status: 2 };
       }
-    } else {
-      // 数据库内无数据，插入数据
-      const hit = await ctx.app.mysql.insert('rank', parse_data);
-
-      if (hit.affectedRows === 1) {
-        // 插入成功
-        return {
-          status: 1,
-          data: parse_data
-        };
-      } else {
-        // 插入失败
-        return { status: 3 };
-      }
+      // 更新失败
+      return { status: 2 };
     }
+    // 数据库内无数据，插入数据
+    const hit = await ctx.app.mysql.insert('rank', parse_data);
+
+    if (hit.affectedRows === 1) {
+      // 插入成功
+      return {
+        status: 1,
+        data: parse_data
+      };
+    }
+    // 插入失败
+    return { status: 3 };
   }
 }
 

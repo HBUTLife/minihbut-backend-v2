@@ -47,11 +47,11 @@ class ScoreListController extends Controller {
         ctx.body = {
           code: 200,
           message: '成绩列表获取成功',
-          data: data
+          data
         };
       } else {
         // 登录过期，重新登录获取
-        const reauth = await ctx.service.auth.re(user.student_id);
+        const reauth = await ctx.service.auth.idaas(user.student_id);
         if (reauth) {
           // 重新授权成功重新执行
           await this.index();
@@ -77,7 +77,7 @@ class ScoreListController extends Controller {
         // 指定学期
         data = await ctx.app.mysql.select('score', {
           where: {
-            term: term,
+            term,
             student_id: user.student_id
           }
         });
@@ -86,17 +86,17 @@ class ScoreListController extends Controller {
       ctx.body = {
         code: 201,
         message: '成绩列表获取成功',
-        data: data
+        data
       };
     }
   }
 
   /**
    * 成绩信息处理
-   * @param {string} student_id
-   * @param {string} term
-   * @param {object} data
-   * @returns
+   * @param {string} student_id 学号
+   * @param {string} term 学期
+   * @param {object} data 数据
+   * @return {object} 格式化后数据
    */
   async processData(student_id, term, data) {
     const { ctx } = this;
@@ -104,17 +104,17 @@ class ScoreListController extends Controller {
     if (term === '001') {
       // 是
       await ctx.app.mysql.delete('score', {
-        student_id: student_id
+        student_id
       });
     } else {
       // 否
       await ctx.app.mysql.delete('score', {
-        student_id: student_id,
-        term: term
+        student_id,
+        term
       });
     }
     // 对获取到的数据进行处理并插入数据库
-    let parse_data = [];
+    const parse_data = [];
     for (const item of data) {
       const data = {
         id: item.id.toLowerCase(),
@@ -132,7 +132,7 @@ class ScoreListController extends Controller {
         score: parseInt(item.yscj),
         detail: item.cjfxms,
         term: item.xnxq,
-        student_id: student_id
+        student_id
       };
       // 插入成绩
       await ctx.app.mysql.insert('score', data);

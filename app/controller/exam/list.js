@@ -48,11 +48,11 @@ class ExamListController extends Controller {
         ctx.body = {
           code: 200,
           message: '考试列表获取成功',
-          data: data
+          data
         };
       } else {
         // 登录过期，重新登录获取
-        const reauth = await ctx.service.auth.re(user.student_id);
+        const reauth = await ctx.service.auth.idaas(user.student_id);
         if (reauth) {
           // 重新授权成功重新执行
           await this.index();
@@ -68,7 +68,7 @@ class ExamListController extends Controller {
       // 教务系统无法访问，展示数据库内数据
       const data = await ctx.app.mysql.select('exam', {
         where: {
-          term: term,
+          term,
           student_id: user.student_id
         }
       });
@@ -76,7 +76,7 @@ class ExamListController extends Controller {
       ctx.body = {
         code: 201,
         message: '考试列表获取成功',
-        data: data
+        data
       };
     }
   }
@@ -85,11 +85,11 @@ class ExamListController extends Controller {
     const { ctx } = this;
     // 先删除数据库中原有的数据
     await ctx.app.mysql.delete('exam', {
-      student_id: student_id,
-      term: term
+      student_id,
+      term
     });
     // 对获取到的数据进行处理并插入数据库
-    let parse_data = [];
+    const parse_data = [];
     for (const item of data) {
       // 开始、结束时间戳处理
       const time = item.kssj;
@@ -103,13 +103,13 @@ class ExamListController extends Controller {
         name: item.kcmc,
         batch: item.kspcmc,
         type: item.ksfs,
-        time: time,
-        timestamp_start: timestamp_start,
-        timestamp_end: timestamp_end,
+        time,
+        timestamp_start,
+        timestamp_end,
         location: item.jsmc,
         seat: item.zwh,
-        term: term,
-        student_id: student_id
+        term,
+        student_id
       };
       await ctx.app.mysql.insert('exam', data);
       parse_data.push(data);

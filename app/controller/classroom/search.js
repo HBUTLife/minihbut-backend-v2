@@ -45,7 +45,7 @@ class ClassroomSearchController extends Controller {
 
       if (result.status === 200) {
         // 获取成功
-        let parse_data = [];
+        const parse_data = [];
         if (result.data.total > 0) {
           for (const item of result.data.results) {
             parse_data.push({
@@ -64,7 +64,7 @@ class ClassroomSearchController extends Controller {
         };
       } else {
         // 登录过期，重新登录获取
-        const reauth = await ctx.service.auth.re(user.student_id);
+        const reauth = await ctx.service.auth.idaas(user.student_id);
         if (reauth) {
           // 重新授权成功重新执行
           await this.index();

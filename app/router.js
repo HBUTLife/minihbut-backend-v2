@@ -4,7 +4,8 @@
 module.exports = app => {
   const { router, controller } = app;
   router.get('/', controller.home.index);
-  router.post('/auth/login', controller.auth.login.index);
+  // router.post('/auth/login', controller.auth.login.index); // 教务系统登录
+  router.post('/auth/idaas', controller.auth.idaas.index); // Idaas 登录
   router.post('/auth/wechat/login', controller.auth.wechat.login.index);
   router.post('/auth/wechat/bind', controller.auth.wechat.bind.index);
   router.post('/auth/wechat/unbind', controller.auth.wechat.unbind.index);
