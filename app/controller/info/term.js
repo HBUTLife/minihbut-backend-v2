@@ -31,8 +31,8 @@ class InfoTermController extends Controller {
         }
       }
       // 存入 Redis
-      const cache_hit = await ctx.app.redis.set(`term_${user.student_id}`, JSON.stringify(term_list), 'EX', 604800); // 7 天过期
-      if (cache_hit === 'OK') {
+      const cache_update = await ctx.app.redis.set(`term_${user.student_id}`, JSON.stringify(term_list), 'EX', 604800); // 7 天过期
+      if (cache_update === 'OK') {
         // 缓存成功
         ctx.body = {
           code: 200,
