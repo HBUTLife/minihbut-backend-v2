@@ -13,7 +13,7 @@ class InfoTermController extends Controller {
     try {
       const result = await ctx.app.mysql.select('term', { orders: [['id', 'desc']] });
       // 获取成功，根据用户入学年级进行处理
-      let term_list = [];
+      const term_list = [];
       for (const item of result) {
         const start = parseInt(item.name.split('-')[0]);
         if (start >= user.grade_enter) {

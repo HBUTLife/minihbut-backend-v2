@@ -34,7 +34,7 @@ class InfoWeatherController extends Controller {
           ctx.body = {
             code: 200,
             message: '天气获取成功',
-            data: data
+            data
           };
         } else {
           // 更新失败
@@ -61,7 +61,7 @@ class InfoWeatherController extends Controller {
         ctx.body = {
           code: 200,
           message: '天气获取成功',
-          data: data
+          data
         };
       } else {
         // 插入失败
@@ -75,7 +75,7 @@ class InfoWeatherController extends Controller {
 
   /**
    * 接口获取天气方法
-   * @returns
+   * @return {object} 天气信息
    */
   async getWeather() {
     const { ctx } = this;

@@ -22,8 +22,8 @@ class StatisticDetailController extends Controller {
     // 获取该教师该课程全部成绩
     const result = await this.app.mysql.select('score', {
       where: {
-        name: name,
-        teacher: teacher
+        name,
+        teacher
       },
       orders: [['score', 'desc']]
     });
@@ -47,7 +47,7 @@ class StatisticDetailController extends Controller {
     let total_score = 0; // 总分
 
     for (const item of result) {
-      let score = item.score;
+      const score = item.score;
       if (score >= 90) {
         section1++;
       } else if (score < 90 && score >= 80) {
@@ -66,7 +66,7 @@ class StatisticDetailController extends Controller {
       code: 200,
       message: '给分统计详情获取成功',
       data: {
-        total_number: total_number, // 样本量
+        total_number, // 样本量
         highest_score: result[0].score, // 最高分
         average_score: (total_score / total_number).toFixed(2), // 平均分，保留2位小数
         up_90: ((section1 / total_number) * 100).toFixed(2).toString() + '%', // 90分以上比例

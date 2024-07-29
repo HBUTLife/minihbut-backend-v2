@@ -20,7 +20,7 @@ class InfoOtherController extends Controller {
     // 查询信息
     const result = await ctx.app.mysql.select('other', {
       where: {
-        id: id
+        id
       }
     });
 

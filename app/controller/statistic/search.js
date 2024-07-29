@@ -23,7 +23,7 @@ class StatisticSearchController extends Controller {
       `%${keyword}%`
     ]);
     // 遍历查重并格式化
-    let search_list = [];
+    const search_list = [];
     result.forEach(item => {
       const count = search_list.filter(ele => ele.name === item.name && ele.teacher === item.teacher);
       if (count.length === 0 && item.teacher) {

@@ -49,7 +49,7 @@ class AuthWechatLoginController extends Controller {
             code: 200,
             message: '微信登录成功',
             data: {
-              info: info,
+              info,
               token: this.signToken(info)
             }
           };
@@ -78,8 +78,8 @@ class AuthWechatLoginController extends Controller {
 
   /**
    * 签名token
-   * @param {object} payload
-   * @returns
+   * @param {object} payload 载荷
+   * @return {string} token
    */
   signToken(payload) {
     const { ctx } = this;
