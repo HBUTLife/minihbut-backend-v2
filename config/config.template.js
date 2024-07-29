@@ -5,10 +5,20 @@
 // MySQL 配置
 exports.mysql = {
   client: {
-    host: '',
-    port: '',
-    user: '',
-    password: '',
-    database: ''
+    host: '127.0.0.1', // MySQL 主机
+    port: '3306', // MySQL 端口
+    user: '', // MySQL 用户名
+    password: '', // MySQL 用户密码
+    database: '' // MySQL 数据库名称
+  }
+};
+
+// Redis 配置
+exports.redis = {
+  client: {
+    host: '127.0.0.1', // Redis 主机
+    port: 6379, // Redis 端口
+    password: '', // Redis 密码
+    db: 0 // 默认
   }
 };
