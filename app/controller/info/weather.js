@@ -11,63 +11,31 @@ class InfoWeatherController extends Controller {
     const { ctx } = this;
     // 今日日期
     const today = dayjs().format('YYYY-MM-DD');
-    // 检测是否存在已有数据
-    const local = await ctx.app.mysql.select('weather', {
-      where: {
-        date: today
-      }
-    });
-
-    if (local.length > 0) {
-      // 已存在
-      if (local[0].last_update + 3600 < dayjs().unix()) {
-        // 已经过一小时，更新数据
-        const data = await this.getWeather();
-        const hit = await ctx.app.mysql.update('weather', data, {
-          where: {
-            date: today
-          }
-        });
-
-        if (hit.affectedRows === 1) {
-          // 更新成功
-          ctx.body = {
-            code: 200,
-            message: '天气获取成功',
-            data
-          };
-        } else {
-          // 更新失败
-          ctx.body = {
-            code: 500,
-            message: '天气获取失败'
-          };
-        }
-      } else {
-        // 不更新数据
-        ctx.body = {
-          code: 201,
-          message: '天气获取成功',
-          data: local[0]
-        };
-      }
+    // Redis 获取天气信息缓存
+    const cache = await ctx.app.redis.get(`weather_${today}`);
+    if (cache) {
+      // 存在缓存，不更新
+      ctx.body = {
+        code: 201,
+        message: '天气获取成功',
+        data: JSON.parse(cache)
+      };
     } else {
-      // 不存在，获取并插入
-      const data = await this.getWeather();
-      const hit = await ctx.app.mysql.insert('weather', data);
-
-      if (hit.affectedRows === 1) {
-        // 插入成功
+      // 不存在缓存，更新
+      const get = await this.getWeather();
+      const cache_update = await ctx.app.redis.set(`weather_${today}`, JSON.stringify(get), 'EX', 300); // 5 分钟过期
+      if (cache_update === 'OK') {
+        // 缓存更新成功
         ctx.body = {
           code: 200,
           message: '天气获取成功',
-          data
+          data: get
         };
       } else {
-        // 插入失败
+        // 缓存更新失败
         ctx.body = {
           code: 500,
-          message: '天气插入失败'
+          message: '天气缓存更新失败'
         };
       }
     }
@@ -99,7 +67,7 @@ class InfoWeatherController extends Controller {
         text_day: data.textDay,
         icon_night: data.iconNight,
         text_night: data.textNight,
-        last_update: dayjs().unix()
+        last_update: dayjs().unix() // 最后更新时间
       };
       return list;
     }
