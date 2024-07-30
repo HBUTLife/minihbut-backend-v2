@@ -111,7 +111,7 @@ class AuthLoginController extends Controller {
       } else {
         // 未注册
         ctx.body = {
-          code: -1,
+          code: 500,
           message: '教务系统无法访问'
         };
       }
