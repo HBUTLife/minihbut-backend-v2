@@ -27,8 +27,6 @@ class AuthWechatBindController extends Controller {
         dataType: 'json'
       });
 
-      console.log(result.data);
-
       if (result.data.openid) {
         // 获取成功，保存至数据库进行绑定
         const hit = await ctx.app.mysql.update(
