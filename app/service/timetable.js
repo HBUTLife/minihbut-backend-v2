@@ -84,7 +84,7 @@ class TimetableService extends Service {
           location: item.croommc,
           teacher: item.tmc,
           week: item.zcstr,
-          day: item.xq,
+          day: parseInt(item.xq),
           section: item.djc.toString(),
           term: item.xnxq,
           student_id,
