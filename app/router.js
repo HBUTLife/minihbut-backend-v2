@@ -21,4 +21,5 @@ module.exports = app => {
   router.get('/info/article', controller.info.article.index);
   router.get('/timetable/person/list', controller.timetable.person.list.index);
   router.get('/timetable/person/update', controller.timetable.person.update.index);
+  router.post('/timetable/person/add', controller.timetable.person.add.index);
 };
