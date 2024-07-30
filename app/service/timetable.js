@@ -32,11 +32,12 @@ class TimetableService extends Service {
         // 获取成功
         if (result.data.length > 0) {
           // 有数据，更新 MySQL 和 Redis
-          const data = await this.databaseUpdate(student_id, term, result.data);
-          await this.cacheUpdate(student_id, term, data);
+          const data = await this.databaseUpdate(student_id, term, result.data); // 写入 MySQL 并获取原始课表
+          const custom = await this.cacheUpdate(student_id, term, data); // 写入 Redis 并获取自定义课表
+          const final_data = data.concat(custom);
           return {
             status: 1,
-            data
+            data: final_data
           };
         }
         // 无数据
@@ -120,8 +121,9 @@ class TimetableService extends Service {
   /**
    * 写入缓存
    * @param {string} student_id 学号
-   * @param {*} term 学期
-   * @param {*} data 处理后数据
+   * @param {string} term 学期
+   * @param {object} data 处理后数据
+   * @return {object} 自定义课程列表
    */
   async cacheUpdate(student_id, term, data) {
     const { ctx } = this;
@@ -136,6 +138,8 @@ class TimetableService extends Service {
     const final_data = data.concat(custom);
     // 写入 Redis
     await ctx.app.redis.set(`timetable_person_${student_id}_${term}`, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
+    // 返回自定义课程列表
+    return custom;
   }
 }
 
