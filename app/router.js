@@ -19,4 +19,5 @@ module.exports = app => {
   router.get('/info/other', controller.info.other.index);
   router.get('/info/term', controller.info.term.index);
   router.get('/info/article', controller.info.article.index);
+  router.get('/timetable/person/list', controller.timetable.person.list.index);
 };

@@ -34,7 +34,9 @@ module.exports = appInfo => {
     score: '/admin/xsd/xsdcjcx/xsdQueryXscjList',
     rank: '/admin/cjgl/xscjbbdy/getXscjpm',
     exam: '/admin/xsd/kwglXsdKscx/ajaxXsksList',
-    classroom: '/admin/system/jxzy/jsxx/getZyKjs'
+    classroom: '/admin/system/jxzy/jsxx/getZyKjs',
+    upload: '/admin/system/attachment/upload',
+    timetable: '/admin/pkgl/xskb/sdpkkbList'
   };
 
   // idaas连接配置
