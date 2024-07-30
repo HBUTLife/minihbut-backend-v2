@@ -23,4 +23,5 @@ module.exports = app => {
   router.get('/timetable/person/update', controller.timetable.person.update.index);
   router.post('/timetable/person/add', controller.timetable.person.add.index);
   router.post('/timetable/person/delete', controller.timetable.person.delete.index);
+  router.post('/timetable/person/edit', controller.timetable.person.edit.index);
 };
