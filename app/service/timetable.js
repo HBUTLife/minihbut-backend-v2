@@ -71,7 +71,7 @@ class TimetableService extends Service {
           value.location === item.croommc &&
           value.teacher === item.tmc &&
           value.week === item.zcstr &&
-          value.day === item.xq
+          value.day === parseInt(item.xq)
       );
       if (found_index !== -1) {
         // 新数组存在则修改节次
