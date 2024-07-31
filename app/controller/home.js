@@ -1,4 +1,5 @@
 // app/controller/home.js
+
 const { Controller } = require('egg');
 
 class HomeController extends Controller {

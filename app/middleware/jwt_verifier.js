@@ -1,7 +1,15 @@
 // app/middleware/jwt_verify.js
 
 // 白名单，过滤不需要鉴权的接口
-const white_list = ['/', '/auth/idaas', '/auth/wechat/login', '/info/weather', '/info/other', '/info/article'];
+const white_list = [
+  '/',
+  '/auth/idaas',
+  '/auth/wechat/login',
+  '/info/weather',
+  '/info/other',
+  '/info/article',
+  '/timetable/person/ics'
+];
 
 module.exports = () => {
   return async function (ctx, next) {

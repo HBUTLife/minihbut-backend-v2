@@ -36,7 +36,8 @@ module.exports = appInfo => {
     exam: '/admin/xsd/kwglXsdKscx/ajaxXsksList',
     classroom: '/admin/system/jxzy/jsxx/getZyKjs',
     upload: '/admin/system/attachment/upload',
-    timetable: '/admin/pkgl/xskb/sdpkkbList'
+    timetable: '/admin/pkgl/xskb/sdpkkbList',
+    lesson: '/admin/jsd/qxzkb/querylist'
   };
 
   // idaas连接配置
