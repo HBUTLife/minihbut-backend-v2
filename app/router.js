@@ -15,7 +15,7 @@ module.exports = app => {
   router.get('/statistic/search', controller.statistic.search.index);
   router.get('/statistic/detail', controller.statistic.detail.index);
   router.get('/classroom/search', controller.classroom.search.index);
-  router.get('/info/weather', controller.info.weather.index);
+  // router.get('/info/weather', controller.info.weather.index); // 天气获取，停用
   router.get('/info/other', controller.info.other.index);
   router.get('/info/term', controller.info.term.index);
   router.get('/info/article', controller.info.article.index);
