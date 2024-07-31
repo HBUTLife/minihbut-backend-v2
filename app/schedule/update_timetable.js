@@ -14,6 +14,9 @@ class UpdateTimetable extends Subscription {
   // subscribe 是真正定时任务执行时被运行的函数
   async subscribe() {
     const { ctx } = this;
+    // 获取最新学期
+    const terms = await ctx.app.mysql.select('term', { orders: [['id', 'desc']] });
+    const term = terms[0].name;
     // 获取所有用户
     const user = await ctx.app.mysql.select('user');
     // 遍历所有用户一个个更新课表
@@ -23,7 +26,7 @@ class UpdateTimetable extends Subscription {
       console.log(auth);
       if (auth) {
         // 认证成功，更新课表
-        const update = await ctx.service.timetable.update(item.student_id, '2023-2024-2');
+        const update = await ctx.service.timetable.update(item.student_id, term);
         if (update.status === 4) {
           // 教务系统出错，退出 for 循环
           break;
