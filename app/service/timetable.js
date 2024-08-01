@@ -101,18 +101,27 @@ class TimetableService extends Service {
     for (const item of parse_data) {
       // 格式化课程名称
       item.name = item.name
-        .replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '')
-        .replace('</a>', '');
+        ? item.name.replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '').replace('</a>', '')
+        : '';
       // 格式化上课地点
       item.location = item.location
-        .replace(/<a href="javascript:void\(0\);" onclick="openCrkb\('.*?','.*?'\)">/g, '')
-        .replace('</a>', '');
+        ? item.location
+            .replace(/<a href="javascript:void\(0\);" onclick="openCrkb\('.*?','.*?'\)">/g, '')
+            .replace('</a>', '')
+        : '';
       // 格式化教师
       item.teacher = item.teacher
-        .replaceAll(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
-        .replaceAll('</a>', '');
-      // 插入数据
-      await ctx.app.mysql.insert('timetable', item);
+        ? item.teacher
+            .replaceAll(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
+            .replaceAll('</a>', '')
+        : '';
+      try {
+        // 插入数据
+        await ctx.app.mysql.insert('timetable', item);
+      } catch (err) {
+        // 丢出错误
+        console.log(err);
+      }
     }
     // 返回处理完数据
     return parse_data;
