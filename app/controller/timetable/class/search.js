@@ -60,7 +60,7 @@ class TimetableClassSearchController extends Controller {
         }
         // 存入 Redis
         const data_sorted = class_list.sort();
-        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data_sorted), 'EX', 3600); // 1 小时过期
+        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data_sorted), 'EX', 86400); // 24 小时过期
         if (cache_update === 'OK') {
           // 存入成功
           ctx.body = {

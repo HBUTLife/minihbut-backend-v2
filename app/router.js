@@ -27,4 +27,5 @@ module.exports = app => {
   router.get('/timetable/person/export', controller.timetable.person.export.index);
   router.get('/timetable/person/ics', controller.timetable.person.ics.index);
   router.get('/timetable/class/search', controller.timetable.class.search.index);
+  router.get('/timetable/class/detail', controller.timetable.class.detail.index);
 };
