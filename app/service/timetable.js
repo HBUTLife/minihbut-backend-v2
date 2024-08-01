@@ -101,19 +101,19 @@ class TimetableService extends Service {
     for (const item of parse_data) {
       // 格式化课程名称
       item.name = item.name
-        ? item.name.replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '').replace('</a>', '')
+        ? item.name.replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '').replaceAll('</a>', '')
         : '';
       // 格式化上课地点
       item.location = item.location
         ? item.location
             .replace(/<a href="javascript:void\(0\);" onclick="openCrkb\('.*?','.*?'\)">/g, '')
-            .replace('</a>', '')
+            .replaceAll('</a>', '')
         : '';
       // 格式化教师
       item.teacher = item.teacher
         ? item.teacher
             .replace(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
-            .replace('</a>', '')
+            .replaceAll('</a>', '')
         : '';
       try {
         // 插入数据

@@ -169,16 +169,18 @@ class UpdateLesson extends Subscription {
     const { ctx } = this;
     const last_update = dayjs().unix();
     raw = raw.map(item => ({
-      name: item.kcmc.replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '').replace('</a>', ''),
+      name: item.kcmc
+        .replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '')
+        .replaceAll('</a>', ''),
       teacher: item.skjs
         ? item.skjs
             .replace(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
-            .replace('</a>', '')
+            .replaceAll('</a>', '')
         : '',
       classes: item.jxbzc
         ? item.jxbzc
             .replace(/<a href="javascript:void\(0\);" onclick="openBjkb\('.*?','.*?'\)">/g, '')
-            .replace('</a>', '')
+            .replaceAll('</a>', '')
         : '',
       term: item.xnxq,
       timeAndPlace: this.handle(item.sksjdd)
