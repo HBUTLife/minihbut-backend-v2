@@ -40,12 +40,20 @@ class TimetablePersonListController extends Controller {
       });
       if (local.length > 0) {
         // 数据库中有数据，存入 Redis
-        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(local), 'EX', 604800); // 7 天过期
+        const custom = await ctx.app.mysql.select('timetable_custom', {
+          where: {
+            term,
+            student_id: user.student_id
+          }
+        });
+        const final_data = local.concat(custom);
+        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
         if (cache_update === 'OK') {
           // 更新成功
           ctx.body = {
             code: 202,
-            message: '个人课表列表获取成功'
+            message: '个人课表列表获取成功',
+            data: final_data
           };
         } else {
           // 更新失败
