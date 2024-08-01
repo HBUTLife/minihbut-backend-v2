@@ -18,6 +18,14 @@ class StatisticSearchController extends Controller {
     ctx.validate(createRule, ctx.query);
     // 获取关键词
     const keyword = ctx.query.keyword;
+    // 字符必须大于等于2
+    if (keyword.length < 2) {
+      ctx.body = {
+        code: 403,
+        message: '搜索字符必须大于等于2'
+      };
+      return;
+    }
     const cache_key = `statistic_search_${cryptojs.MD5(keyword).toString()}`;
     // Redis 获取给分统计搜索缓存
     const cache = await ctx.app.redis.get(cache_key);
