@@ -172,13 +172,13 @@ class UpdateLesson extends Subscription {
       name: item.kcmc.replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '').replace('</a>', ''),
       teacher: item.skjs
         ? item.skjs
-            .replaceAll(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
-            .replaceAll('</a>', '')
+            .replace(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
+            .replace('</a>', '')
         : '',
       classes: item.jxbzc
         ? item.jxbzc
-            .replaceAll(/<a href="javascript:void\(0\);" onclick="openBjkb\('.*?','.*?'\)">/g, '')
-            .replaceAll('</a>', '')
+            .replace(/<a href="javascript:void\(0\);" onclick="openBjkb\('.*?','.*?'\)">/g, '')
+            .replace('</a>', '')
         : '',
       term: item.xnxq,
       timeAndPlace: this.handle(item.sksjdd)
@@ -192,7 +192,7 @@ class UpdateLesson extends Subscription {
             name: item.name,
             location: item.timeAndPlace[i + 3],
             teacher: item.teacher,
-            classes: item.classes,
+            classes: item.classes.replace('...', ''),
             week: item.timeAndPlace[i].toString(),
             day: item.timeAndPlace[i + 1],
             section: item.timeAndPlace[i + 2].toString(),

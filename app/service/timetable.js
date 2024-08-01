@@ -112,8 +112,8 @@ class TimetableService extends Service {
       // 格式化教师
       item.teacher = item.teacher
         ? item.teacher
-            .replaceAll(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
-            .replaceAll('</a>', '')
+            .replace(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
+            .replace('</a>', '')
         : '';
       try {
         // 插入数据
