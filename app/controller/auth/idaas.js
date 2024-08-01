@@ -225,7 +225,8 @@ class AuthIdaasController extends Controller {
       dataType: 'json'
     });
     // 原始个人信息数据
-    const origin_info = info.data.data.records[0];
+    const raw = info.data.data.records;
+    const origin_info = raw.find(element => element.xh === username);
     // 格式化个人信息数据
     const parse_info = {
       student_id: origin_info.xh,
