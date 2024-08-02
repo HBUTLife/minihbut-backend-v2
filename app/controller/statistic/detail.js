@@ -43,13 +43,13 @@ class StatisticDetailController extends Controller {
       });
       const total_number = result.length; // 样本总量
       // 样本量少于30不予展示
-      // if (total_number < 30) {
-      //   this.ctx.body = {
-      //     code: 416,
-      //     message: '给分统计样本量少于30'
-      //   };
-      //   return;
-      // }
+      if (total_number < 30) {
+        this.ctx.body = {
+          code: 416,
+          message: '给分统计样本量少于30'
+        };
+        return;
+      }
       // 变量定义
       let section1 = 0; // 90分以上计数
       let section2 = 0; // 80-90分计数
