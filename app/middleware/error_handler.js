@@ -4,6 +4,13 @@ module.exports = () => {
   return async function errorHandler(ctx, next) {
     try {
       await next();
+      if (ctx.status === 404 && !ctx.body) {
+        ctx.status = 404;
+        ctx.body = {
+          code: 404,
+          message: 'Not Found'
+        };
+      }
     } catch (err) {
       // 所有的异常都会触发 app 上的一个 error 事件，框架会记录一条错误日志
       ctx.app.emit('error', err, ctx);

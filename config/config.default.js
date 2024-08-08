@@ -17,7 +17,7 @@ module.exports = appInfo => {
   config.keys = appInfo.name + '_1720548611153_1955';
 
   // 中间件配置
-  config.middleware = ['jwtVerifier', 'notfoundHandler', 'errorHandler'];
+  config.middleware = ['jwtVerifier', 'errorHandler'];
 
   // 安全设置
   config.security = {
