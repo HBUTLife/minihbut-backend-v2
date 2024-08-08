@@ -54,7 +54,6 @@ class StatisticSearchController extends Controller {
               name: item.name,
               teacher: item.teacher
             });
-            return;
           }
         }
         // 存入 Redis
