@@ -7,7 +7,7 @@ class UpdateTimetable extends Subscription {
   static get schedule() {
     return {
       cron: '0 0 3 * * *', // 每天 3 点执行
-      type: 'all'
+      type: 'worker' // 仅一个 worker 执行，避免重复执行
     };
   }
 

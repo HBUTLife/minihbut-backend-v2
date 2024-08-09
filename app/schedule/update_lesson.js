@@ -8,7 +8,7 @@ class UpdateLesson extends Subscription {
   static get schedule() {
     return {
       cron: '0 0 4 * * *', // 每天 4 点执行
-      type: 'all'
+      type: 'worker' // 仅一个 worker 执行，避免重复执行
     };
   }
 
@@ -164,11 +164,20 @@ class UpdateLesson extends Subscription {
     return arr;
   }
 
+  // 去除所有的括号及内容
+  removeAllBrackets(str) {
+    let result = str.replace(/\([^()]*\)/g, '');
+    while (/\([^()]*\)/.test(result)) {
+      result = result.replace(/\([^()]*\)/g, '');
+    }
+    return result;
+  }
+
   // 处理数据
-  async processData(raw) {
+  async processData(data) {
     const { ctx } = this;
     const last_update = dayjs().unix();
-    raw = raw.map(item => ({
+    const raw = data.map(item => ({
       name: item.kcmc
         .replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '')
         .replaceAll('</a>', ''),
@@ -178,9 +187,11 @@ class UpdateLesson extends Subscription {
             .replaceAll('</a>', '')
         : '',
       classes: item.jxbzc
-        ? item.jxbzc
-            .replace(/<a href="javascript:void\(0\);" onclick="openBjkb\('.*?','.*?'\)">/g, '')
-            .replaceAll('</a>', '')
+        ? this.removeAllBrackets(
+            item.jxbzc
+              .replace(/<a href="javascript:void\(0\);" onclick="openBjkb\('.*?','.*?'\)">/g, '')
+              .replaceAll('</a>', '')
+          )
         : '',
       term: item.xnxq,
       timeAndPlace: this.handle(item.sksjdd)
