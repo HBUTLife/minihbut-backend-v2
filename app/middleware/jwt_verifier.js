@@ -3,7 +3,10 @@
 // 白名单，过滤不需要鉴权的接口
 const white_list = [
   '/',
-  '/auth/idaas',
+  '/auth/idaas/login',
+  '/auth/idaas/sms',
+  '/auth/idaas/code',
+  '/auth/idaas/reset',
   '/auth/wechat/login',
   '/info/weather',
   '/info/other',

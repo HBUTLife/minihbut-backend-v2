@@ -44,7 +44,10 @@ module.exports = appInfo => {
   config.idaas = {
     base: 'https://idaas-idp.hbut.edu.cn',
     login: '/api/v1/idaas-idp.hbut.edu.cn/login',
-    sso: '/sso/tn-b6844f43ad554d15aaa73f4ed4319a52/ai-b1d8f5fe47cb42cebcef97a57c8790dc/cas'
+    sso: '/sso/tn-b6844f43ad554d15aaa73f4ed4319a52/ai-b1d8f5fe47cb42cebcef97a57c8790dc/cas',
+    sms: '/api/v1/idaas-idp.hbut.edu.cn/forget_password/v2/sms',
+    code: '/api/v1/idaas-idp.hbut.edu.cn/forget_password/v2/sms/token',
+    reset: '/api/v1/idaas-idp.hbut.edu.cn/set_password'
   };
 
   // 小程序配置

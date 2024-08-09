@@ -1,4 +1,4 @@
-// app/controller/auth/idaas.js
+// app/controller/auth/idaas/login.js
 
 const { Controller } = require('egg');
 const dayjs = require('dayjs');
@@ -11,7 +11,7 @@ const createRule = {
   password: 'string'
 };
 
-class AuthIdaasController extends Controller {
+class AuthIdaasLoginController extends Controller {
   /**
    * Idaas 登录方法
    */
@@ -302,4 +302,4 @@ class AuthIdaasController extends Controller {
   }
 }
 
-module.exports = AuthIdaasController;
+module.exports = AuthIdaasLoginController;
