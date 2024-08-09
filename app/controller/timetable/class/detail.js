@@ -31,7 +31,10 @@ class TimetableClassDetailController extends Controller {
       };
     } else {
       // 不存在缓存，从数据库中获取并存入 Redis
-      const result = await ctx.app.mysql.query('SELECT * FROM lesson WHERE classes LIKE ?', [`%${class_name}%`]);
+      const result = await ctx.app.mysql.query(
+        'SELECT id, name, location, teacher, week, day, section FROM lesson WHERE classes LIKE ?',
+        [`%${class_name}%`]
+      );
       if (result.length > 0) {
         // 有结果，存入 Redis
         const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(result), 'EX', 86400); // 24 小时过期
