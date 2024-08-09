@@ -47,7 +47,7 @@ class AuthIdaasCodeController extends Controller {
         // 失败
         ctx.body = {
           code: 401,
-          message: '短信验证失败'
+          message: '验证码不正确'
         };
       }
     } catch (err) {
