@@ -33,6 +33,7 @@ class InfoTodayController extends Controller {
         // 在学期内
         data = {
           term: terms[0].name, // 学期
+          total_weeks: terms[0].total_weeks, // 学期总周数
           info: {
             date: today.format('YYYY-MM-DD'), // 日期
             week: Math.ceil((today_timestamp - terms[0].start_timestamp) / (7 * 24 * 3600)), // 周次
@@ -43,6 +44,7 @@ class InfoTodayController extends Controller {
         // 不在学期内
         data = {
           term: '',
+          total_weeks: 1, // 学期总周数
           info: {
             date: today.format('YYYY-MM-DD'), // 日期
             week: 1, // 周次，默认为 1
