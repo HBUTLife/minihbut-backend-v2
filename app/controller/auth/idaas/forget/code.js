@@ -1,4 +1,4 @@
-// app/controller/auth/idaas/code.js
+// app/controller/auth/idaas/forget/code.js
 
 const { Controller } = require('egg');
 
@@ -8,7 +8,7 @@ const createRule = {
   code: 'string'
 };
 
-class AuthIdaasCodeController extends Controller {
+class AuthIdaasForgetCodeController extends Controller {
   /**
    * 验证码检验
    */
@@ -60,4 +60,4 @@ class AuthIdaasCodeController extends Controller {
   }
 }
 
-module.exports = AuthIdaasCodeController;
+module.exports = AuthIdaasForgetCodeController;

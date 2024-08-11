@@ -1,4 +1,4 @@
-// app/controller/auth/idaas/reset.js
+// app/controller/auth/idaas/forget/reset.js
 
 const { Controller } = require('egg');
 
@@ -8,7 +8,7 @@ const createRule = {
   password: 'string'
 };
 
-class AuthIdaasResetController extends Controller {
+class AuthIdaasForgetResetController extends Controller {
   /**
    * Idaas 修改密码
    */
@@ -57,4 +57,4 @@ class AuthIdaasResetController extends Controller {
   }
 }
 
-module.exports = AuthIdaasResetController;
+module.exports = AuthIdaasForgetResetController;

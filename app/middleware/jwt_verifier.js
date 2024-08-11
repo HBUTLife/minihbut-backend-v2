@@ -4,9 +4,9 @@
 const white_list = [
   '/',
   '/auth/idaas/login',
-  '/auth/idaas/sms',
-  '/auth/idaas/code',
-  '/auth/idaas/reset',
+  '/auth/idaas/forget/sms',
+  '/auth/idaas/forget/code',
+  '/auth/idaas/forget/reset',
   '/auth/wechat/login',
   '/info/weather',
   '/info/other',

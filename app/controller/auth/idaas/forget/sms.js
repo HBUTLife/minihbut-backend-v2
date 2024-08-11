@@ -1,4 +1,4 @@
-// app/controller/auth/idaas/sms.js
+// app/controller/auth/idaas/forget/sms.js
 
 const { Controller } = require('egg');
 
@@ -7,7 +7,7 @@ const createRule = {
   username: 'string'
 };
 
-class AuthIdaasSmsController extends Controller {
+class AuthIdaasForgetSmsController extends Controller {
   /**
    * Idaas 发送短信
    */
@@ -66,4 +66,4 @@ class AuthIdaasSmsController extends Controller {
   }
 }
 
-module.exports = AuthIdaasSmsController;
+module.exports = AuthIdaasForgetSmsController;

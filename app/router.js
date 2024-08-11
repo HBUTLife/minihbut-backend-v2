@@ -4,10 +4,10 @@
 module.exports = app => {
   const { router, controller } = app;
   router.get('/', controller.home.index);
-  router.post('/auth/idaas/login', controller.auth.idaas.login.index); // Idaas 登录
-  router.post('/auth/idaas/sms', controller.auth.idaas.sms.index); // Idaas 发送短信
-  router.post('/auth/idaas/code', controller.auth.idaas.code.index); // Idaas 短信验证
-  router.post('/auth/idaas/reset', controller.auth.idaas.reset.index); // Idaas 修改密码
+  router.post('/auth/idaas/login', controller.auth.idaas.login.index);
+  router.post('/auth/idaas/forget/sms', controller.auth.idaas.forget.sms.index);
+  router.post('/auth/idaas/forget/code', controller.auth.idaas.forget.code.index);
+  router.post('/auth/idaas/forget/reset', controller.auth.idaas.forget.reset.index);
   router.post('/auth/wechat/login', controller.auth.wechat.login.index);
   router.post('/auth/wechat/bind', controller.auth.wechat.bind.index);
   router.post('/auth/wechat/unbind', controller.auth.wechat.unbind.index);
