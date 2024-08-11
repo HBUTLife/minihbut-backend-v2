@@ -37,7 +37,7 @@ class InfoTodayController extends Controller {
           info: {
             date: today.format('YYYY-MM-DD'), // 日期
             week: Math.ceil((today_timestamp - terms[0].start_timestamp) / (7 * 24 * 3600)), // 周次
-            day: today.day() + 1 // 星期
+            day: this.getTodayDay(today.day()) // 星期
           }
         };
       } else {
@@ -48,7 +48,7 @@ class InfoTodayController extends Controller {
           info: {
             date: today.format('YYYY-MM-DD'), // 日期
             week: 1, // 周次，默认为 1
-            day: today.day() + 1 // 星期
+            day: this.getTodayDay(today.day()) // 星期
           }
         };
       }
@@ -67,6 +67,20 @@ class InfoTodayController extends Controller {
           message: '今日信息缓存更新失败'
         };
       }
+    }
+  }
+
+  /**
+   * 获取星期
+   * @param {number} day
+   * @returns
+   */
+  getTodayDay(day) {
+    switch (day) {
+      default:
+        return day;
+      case 0:
+        return 7;
     }
   }
 }
