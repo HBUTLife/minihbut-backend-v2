@@ -48,7 +48,7 @@ class InfoTodayController extends Controller {
           info: {
             date: today.format('YYYY-MM-DD'), // 日期
             week: 1, // 周次，默认为 1
-            day: today.day() // 星期
+            day: today.day() + 1 // 星期
           }
         };
       }
