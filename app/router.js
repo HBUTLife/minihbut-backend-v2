@@ -9,6 +9,7 @@ module.exports = app => {
   router.post('/auth/idaas/forget/code', controller.auth.idaas.forget.code.index);
   router.post('/auth/idaas/forget/reset', controller.auth.idaas.forget.reset.index);
   router.post('/auth/wechat/login', controller.auth.wechat.login.index);
+  router.get('/auth/wechat/status', controller.auth.wechat.status.index);
   router.post('/auth/wechat/bind', controller.auth.wechat.bind.index);
   router.post('/auth/wechat/unbind', controller.auth.wechat.unbind.index);
   router.get('/score/list', controller.score.list.index);
