@@ -28,7 +28,17 @@ class AuthWechatBindController extends Controller {
       });
 
       if (result.data.openid) {
-        // 获取成功，保存至数据库进行绑定
+        // 检查是否已经绑定过帐号
+        const check = await ctx.app.mysql.count('user', { wx_openid: result.data.openid });
+        if (check > 0) {
+          // 已绑定
+          ctx.body = {
+            code: 400,
+            message: '绑定失败，您的微信已绑定过其他帐号'
+          };
+          return;
+        }
+        // 未绑定，保存至数据库进行绑定
         const hit = await ctx.app.mysql.update(
           'user',
           {
