@@ -22,3 +22,6 @@ exports.redis = {
     db: 0 // 默认
   }
 };
+
+// 其他信息获取配置
+exports.info_extra = '';

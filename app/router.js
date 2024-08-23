@@ -20,6 +20,7 @@ module.exports = app => {
   router.get('/classroom/search', controller.classroom.search.index);
   router.get('/info/term', controller.info.term.index);
   router.get('/info/today', controller.info.today.index);
+  router.get('/info/extra', controller.info.extra.index);
   router.get('/timetable/person/list', controller.timetable.person.list.index);
   router.get('/timetable/person/today', controller.timetable.person.today.index);
   router.get('/timetable/person/update', controller.timetable.person.update.index);
