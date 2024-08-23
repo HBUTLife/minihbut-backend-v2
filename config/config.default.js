@@ -13,9 +13,6 @@ module.exports = appInfo => {
    **/
   const config = (exports = {});
 
-  // use for cookie sign key, should change to your own and keep security
-  config.keys = appInfo.name + '_1720548611153_1955';
-
   // 中间件配置
   config.middleware = ['jwtVerifier', 'errorHandler'];
 
@@ -44,7 +41,7 @@ module.exports = appInfo => {
   config.idaas = {
     base: 'https://idaas-idp.hbut.edu.cn',
     login: '/api/v1/idaas-idp.hbut.edu.cn/login',
-    sso: '/sso/tn-b6844f43ad554d15aaa73f4ed4319a52/ai-b1d8f5fe47cb42cebcef97a57c8790dc/cas',
+    sso: '/sso/tn-b6844f43ad554d15aaa73f4ed4319a52/ai-4153833891724dbcb30dea72926feb37/cas?service=https%3A%2F%2Fjwxt.hbut.edu.cn%2Fadmin%2Fcaslogin%2Fgrkb',
     sms: '/api/v1/idaas-idp.hbut.edu.cn/forget_password/v2/sms',
     code: '/api/v1/idaas-idp.hbut.edu.cn/forget_password/v2/sms/token',
     reset: '/api/v1/idaas-idp.hbut.edu.cn/set_password'
@@ -55,13 +52,6 @@ module.exports = appInfo => {
     app_id: 'wx42a9beac92f39a9a',
     app_secret: 'd1562932c12945fbfd02813c518f5092',
     api_url: 'https://api.weixin.qq.com/sns/jscode2session'
-  };
-
-  // 和风天气配置
-  config.qweather = {
-    location: '101200101',
-    key: '8b0048af128f4918acb7ece9154d9bbb',
-    api_url: 'https://devapi.qweather.com/v7/weather/3d'
   };
 
   // 公共 jwt 配置

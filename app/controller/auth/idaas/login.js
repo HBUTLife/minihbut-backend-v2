@@ -25,7 +25,7 @@ class AuthIdaasLoginController extends Controller {
 
     try {
       // 请求 Idaas 接口获取 access_token, refresh_token, locale
-      const login = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.login, {
+      const idaas = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.login, {
         method: 'POST',
         headers: {
           'content-type': 'application/json'
@@ -36,173 +36,147 @@ class AuthIdaasLoginController extends Controller {
         }
       });
 
-      if (login.status === 200) {
-        // 登录成功
-        const idaas_cookies = login.headers['set-cookie'].map(cookie => cookie.split(';')[0]).join('; ');
-        // 请求 SSO
-        const sso = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.sso, {
-          headers: {
-            cookie: idaas_cookies
-          }
-        });
-
-        if (sso.status === 303) {
-          // SSO 授权成功
-          const sso_cookies = sso.headers['set-cookie'].map(cookie => cookie.split(';')[0]).join('; ');
-          const sso_next_url = sso.headers.location;
-          // 请求二次 SSO
-          const sso2 = await ctx.curl(sso_next_url, {
-            headers: {
-              cookie: `${idaas_cookies}; ${sso_cookies}`
-            }
-          });
-
-          if (sso2.status === 302) {
-            // SSO2 授权成功，跳转教务
-            const sso2_next_url = sso2.headers.location;
-            // 请求教务系统前先获得 uid 和 route
-            const enter = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.login);
-            const enter_cookies = enter.headers['set-cookie'];
-            const cookie_uid = enter_cookies[0].split(';')[0];
-            const cookie_route = enter_cookies[1].split(';')[0];
-            // 请求教务 ticket 验证
-            const ticket = await ctx.curl(sso2_next_url, {
-              headers: {
-                cookie: `${cookie_uid}; ${cookie_route}`
+      if (idaas.status === 200) {
+        // Idaas 登录成功
+        const idaas_cookies = idaas.headers['set-cookie'].map(cookie => cookie.split(';')[0]);
+        // 请求登录教务系统
+        const login = await this.tryLogin(ctx.app.config.idaas.base + ctx.app.config.idaas.sso, idaas_cookies);
+        if (login.length > 0) {
+          // 登录成功
+          const cookie_uid = login.find(item => item.startsWith('uid='));
+          const cookie_route = login.find(item => item.startsWith('route='));
+          // 获取个人信息
+          const info = await this.processInfo(username, password, cookie_uid, cookie_route);
+          if (info.status === 1) {
+            // 存入/更新信息成功
+            ctx.body = {
+              code: 200,
+              message: '登录成功',
+              data: {
+                info: info.data,
+                token: this.signToken(info.data)
               }
-            });
-
-            if (ticket.status === 302) {
-              // ticket 验证成功
-              const ticket_cookies = ticket.headers['set-cookie'];
-              const cookie_jsessionid = ticket_cookies[0].split(';');
-              const ticket_next_url = ticket.headers.location;
-              const jw_cookies_all = `${cookie_uid}; ${cookie_route}; ${cookie_jsessionid}`;
-              // 跳转 caslogin
-              const cas = await ctx.curl(ticket_next_url, {
-                headers: {
-                  cookie: jw_cookies_all
-                }
-              });
-
-              if (cas.status === 301) {
-                // 跳转成功
-                const cas_next_url = cas.headers.location;
-                // 二次跳转 caslogin
-                const cas2 = await ctx.curl(cas_next_url, {
-                  headers: {
-                    cookie: jw_cookies_all
-                  }
-                });
-
-                if (cas2.status === 302) {
-                  // 完全成功
-                  const info = await this.processInfo(username, password, cookie_uid, cookie_route);
-                  if (info.status === 1) {
-                    // 存入/更新信息成功
-                    ctx.body = {
-                      code: 200,
-                      message: '登录成功',
-                      data: {
-                        info: info.data,
-                        token: this.signToken(info.data)
-                      }
-                    };
-                  } else if (info.status === 2) {
-                    // 存入/更新信息失败
-                    ctx.body = {
-                      code: 500,
-                      message: '数据库处理失败'
-                    };
-                  }
-                } else {
-                  // 二次 CasLogin 验证失败
-                  ctx.body = {
-                    code: 500,
-                    message: '二次 CasLogin 验证失败'
-                  };
-                }
-              } else {
-                // CasLogin 验证失败
-                ctx.body = {
-                  code: 500,
-                  message: 'CasLogin 验证失败'
-                };
-              }
-            } else {
-              // 教务 ticket 验证失败
-              ctx.body = {
-                code: 500,
-                message: '教务系统 ticket 验证失败'
-              };
-            }
-          } else {
-            // 二次 SSO 请求失败
+            };
+          } else if (info.status === 2) {
+            // 存入/更新信息失败
             ctx.body = {
               code: 500,
-              message: '二次 SSO 请求失败'
+              message: '数据库处理失败'
             };
           }
         } else {
-          // SSO 请求失败
-          ctx.body = {
-            code: 500,
-            message: 'SSO 请求失败'
-          };
+          // 登录过程中遇到错误，根据数据库内信息比对登录
+          await this.databaseLogin(username, password);
         }
-      } else if (login.status === 401) {
-        // 登陆失败，密码错误
+      } else if (idaas.status === 401) {
+        // Idaas 密码错误
+        ctx.body = {
+          code: 401,
+          message: '密码错误'
+        };
+      } else {
+        // Idaas 其他错误
+        ctx.body = {
+          code: idaas.res.statusCode,
+          message: idaas.res.statusMessage
+        };
+      }
+    } catch (err) {
+      // 认证过程中出现问题，根据数据库内信息比对登录
+      await this.databaseLogin(username, password);
+    }
+  }
+
+  /**
+   * 使用数据库信息登录
+   * @param {string} username
+   * @param {string} password
+   */
+  async databaseLogin(username, password) {
+    const { ctx } = this;
+    const local = await ctx.app.mysql.select('user', {
+      where: {
+        student_id: username
+      }
+    });
+
+    if (local.length > 0) {
+      // 拥有该用户，进行比对
+      if (password === tripledes.decrypt(local[0].password, this.ctx.app.config.passkey).toString(cryptojs.enc.Utf8)) {
+        // 密码正确
+        const info = {
+          student_id: local[0].student_id,
+          name: local[0].name,
+          college: local[0].college,
+          class: local[0].class,
+          major: local[0].major,
+          grade: local[0].grade,
+          grade_enter: local[0].grade_enter
+        };
+        ctx.body = {
+          code: 202,
+          message: '登录成功',
+          data: {
+            info,
+            token: this.signToken(info)
+          }
+        };
+      } else {
+        // 密码错误
         ctx.body = {
           code: 401,
           message: '密码错误'
         };
       }
-    } catch (err) {
-      // Idaas或教务系统出错，根据数据库内信息比对登录
-      const local = await ctx.app.mysql.select('user', {
-        where: {
-          student_id: username
-        }
-      });
-
-      if (local.length > 0) {
-        // 拥有该用户，进行比对
-        if (
-          password === tripledes.decrypt(local[0].password, this.ctx.app.config.passkey).toString(cryptojs.enc.Utf8)
-        ) {
-          // 密码正确
-          const info = {
-            student_id: local[0].student_id,
-            name: local[0].name,
-            college: local[0].college,
-            class: local[0].class,
-            major: local[0].major,
-            grade: local[0].grade,
-            grade_enter: local[0].grade_enter
-          };
-          ctx.body = {
-            code: 200,
-            message: '登录成功',
-            data: {
-              info,
-              token: this.signToken(info)
-            }
-          };
-        } else {
-          // 密码错误
-          ctx.body = {
-            code: 401,
-            message: '密码错误'
-          };
-        }
-      } else {
-        // 未注册
-        ctx.body = {
-          code: 500,
-          message: '教务系统无法访问'
-        };
-      }
+    } else {
+      // 未注册
+      ctx.body = {
+        code: 500,
+        message: '教务系统无法访问'
+      };
     }
+  }
+
+  /**
+   * 尝试登录并返回登录过程中所有 Cookie
+   * @param {string} first_url
+   * @param {object} first_cookies
+   * @returns
+   */
+  async tryLogin(first_url, first_cookies) {
+    const { ctx } = this;
+    let cookies = [...first_cookies];
+    let success = true; // 标记请求是否成功
+
+    const tryRequest = async url => {
+      try {
+        const result = await ctx.curl(url, {
+          method: 'GET',
+          headers: {
+            cookie: cookies.join('; ')
+          }
+        });
+
+        if (result.headers['set-cookie']) {
+          // 收集新的 Cookies
+          cookies = cookies.concat(result.headers['set-cookie'].map(cookie => cookie.split(';')[0]));
+        }
+        if (result.status >= 300 && result.status < 400) {
+          const location = result.headers['location'];
+          if (location) {
+            await tryRequest(location); // 跳转并等待完成
+          }
+        }
+      } catch (err) {
+        console.log(err); // 输出错误信息
+        success = false; // 标记为失败
+        return; // 结束当前请求链
+      }
+    };
+
+    await tryRequest(first_url); // 等待所有请求完成
+
+    return success ? cookies : false; // 如果成功返回 Cookies，否则返回 false
   }
 
   /**
