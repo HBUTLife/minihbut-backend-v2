@@ -44,7 +44,7 @@ class InfoTodayController extends Controller {
         // 不在学期内
         data = {
           term: '',
-          total_weeks: 1, // 学期总周数
+          total_weeks: 24, // 学期总周数，默认为 24
           info: {
             date: today.format('YYYY-MM-DD'), // 日期
             week: 1, // 周次，默认为 1
