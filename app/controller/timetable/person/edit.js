@@ -60,6 +60,7 @@ class TimetablePersonEditController extends Controller {
           // 存在缓存则更新
           const origin_data = JSON.parse(cache);
           const final_data = origin_data.filter(item => item.id !== id);
+          data.self = true;
           final_data.push(data);
           await ctx.app.redis.set(cache_key, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
         }

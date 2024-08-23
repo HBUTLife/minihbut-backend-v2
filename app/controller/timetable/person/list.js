@@ -46,6 +46,9 @@ class TimetablePersonListController extends Controller {
             student_id: user.student_id
           }
         });
+        custom.map(item => {
+          item.self = true;
+        });
         const final_data = local.concat(custom);
         const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
         if (cache_update === 'OK') {
