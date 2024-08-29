@@ -23,7 +23,7 @@ class UpdateTimetable extends Subscription {
     for (const item of user) {
       // 先更新一次 uid route
       const auth = await ctx.service.auth.idaas(item.student_id);
-      if (auth) {
+      if (auth.code === 200) {
         // 认证成功，更新课表
         const update = await ctx.service.timetable.update(item.student_id, term);
         if (update.status === 4) {

@@ -41,7 +41,7 @@ class AuthIdaasLoginController extends Controller {
         const idaas_cookies = idaas.headers['set-cookie'].map(cookie => cookie.split(';')[0]);
         // 请求登录教务系统
         const login = await this.tryLogin(ctx.app.config.idaas.base + ctx.app.config.idaas.sso, idaas_cookies);
-        if (login.length > 0) {
+        if (login.some(item => item.startsWith('uid=')) && login.some(item => item.startsWith('route='))) {
           // 登录成功
           const cookie_uid = login.find(item => item.startsWith('uid='));
           const cookie_route = login.find(item => item.startsWith('route='));

@@ -9,36 +9,33 @@ class AuthService extends Service {
   /**
    * Idaas 更新方法
    * @param {string} username 用户名
-   * @return {boolean} 是否更新成功
+   * @return {object} 状态和信息
    */
   async idaas(username) {
     const { ctx } = this;
+    const user = await ctx.app.mysql.select('user', {
+      where: {
+        student_id: username
+      }
+    });
+    // 获取并解密密码
+    const password = tripledes.decrypt(user[0].password, ctx.app.config.passkey).toString(cryptojs.enc.Utf8);
     try {
-      const user = await ctx.app.mysql.select('user', {
-        where: {
-          student_id: username
-        }
-      });
-      // 获取并解密密码
-      const password = tripledes.decrypt(user[0].password, this.ctx.app.config.passkey).toString(cryptojs.enc.Utf8);
       // 请求 Idaas 接口获取 access_token, refresh_token, locale
       const idaas = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.login, {
         method: 'POST',
         headers: {
           'content-type': 'application/json'
         },
-        data: {
-          username,
-          password
-        }
+        data: { username, password }
       });
 
       if (idaas.status === 200) {
         // Idaas 登录成功
         const idaas_cookies = idaas.headers['set-cookie'].map(cookie => cookie.split(';')[0]);
         // 请求登录教务系统
-        const login = await this.tryLogin(ctx.app.config.idaas.base + ctx.app.config.idaas.sso, idaas_cookies);
-        if (login.length > 0) {
+        const login = await this.tryLogin(ctx.app.config.idaas.base + ctx.app.config.idaas.sso, idaas_cookies, ctx);
+        if (login.some(item => item.startsWith('uid=')) && login.some(item => item.startsWith('route='))) {
           // 登录成功
           const cookie_uid = login.find(item => item.startsWith('uid='));
           const cookie_route = login.find(item => item.startsWith('route='));
@@ -57,21 +54,37 @@ class AuthService extends Service {
           );
           if (hit.affectedRows === 1) {
             // 更新成功
-            return true;
+            return {
+              code: 200,
+              message: '重新授权成功重新执行'
+            };
+          } else {
+            // 更新失败
+            return {
+              code: 500,
+              message: '数据库更新失败'
+            };
           }
-          // 更新失败
-          return false;
         } else {
           // 教务系统登录过程中遇到错误
-          return false;
+          return {
+            code: 500,
+            message: '教务系统错误'
+          };
         }
       } else {
         // Idaas 密码错误或其他错误
-        return false;
+        return {
+          code: 401,
+          message: '密码已被更改'
+        };
       }
     } catch (err) {
       // Idaas 认证请求失败
-      return false;
+      return {
+        code: 500,
+        message: 'Idaas 认证请求失败'
+      };
     }
   }
 
@@ -79,10 +92,10 @@ class AuthService extends Service {
    * 尝试登录并返回登录过程中所有 Cookie
    * @param {string} first_url
    * @param {object} first_cookies
+   * @param {*} ctx
    * @returns
    */
-  async tryLogin(first_url, first_cookies) {
-    const { ctx } = this;
+  async tryLogin(first_url, first_cookies, ctx) {
     let cookies = [...first_cookies];
     let success = true; // 标记请求是否成功
 

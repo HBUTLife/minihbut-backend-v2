@@ -85,15 +85,12 @@ class TimetablePersonListController extends Controller {
         } else if (timetable.status === 3) {
           // 登录过期，重新登录获取
           const reauth = await ctx.service.auth.idaas(user.student_id);
-          if (reauth) {
+          if (reauth.code === 200) {
             // 重新授权成功重新执行
             await this.index();
           } else {
             // 重新授权失败
-            ctx.body = {
-              code: 401,
-              message: '重新授权失败'
-            };
+            ctx.body = reauth;
           }
         } else if (timetable.status === 4) {
           // 教务系统错误
