@@ -54,7 +54,7 @@ class AuthIdaasForgetCodeController extends Controller {
       // 无法访问
       ctx.body = {
         code: 500,
-        message: 'Idaas 短信验证接口请求失败'
+        message: '统一身份认证短信验证接口请求失败'
       };
     }
   }

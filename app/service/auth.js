@@ -7,7 +7,7 @@ const tripledes = require('crypto-js/tripledes');
 
 class AuthService extends Service {
   /**
-   * Idaas 更新方法
+   * 统一身份认证更新方法
    * @param {string} username 用户名
    * @return {object} 状态和信息
    */
@@ -21,7 +21,7 @@ class AuthService extends Service {
     // 获取并解密密码
     const password = tripledes.decrypt(user[0].password, ctx.app.config.passkey).toString(cryptojs.enc.Utf8);
     try {
-      // 请求 Idaas 接口获取 access_token, refresh_token, locale
+      // 请求统一身份认证接口获取 access_token, refresh_token, locale
       const idaas = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.login, {
         method: 'POST',
         headers: {
@@ -31,7 +31,7 @@ class AuthService extends Service {
       });
 
       if (idaas.status === 200) {
-        // Idaas 登录成功
+        // 统一身份认证登录成功
         const idaas_cookies = idaas.headers['set-cookie'].map(cookie => cookie.split(';')[0]);
         // 请求登录教务系统
         const login = await this.tryLogin(ctx.app.config.idaas.base + ctx.app.config.idaas.sso, idaas_cookies, ctx);
@@ -83,7 +83,7 @@ class AuthService extends Service {
       // Idaas 认证请求失败
       return {
         code: 500,
-        message: 'Idaas 认证请求失败'
+        message: '统一身份认证系统接口请求失败'
       };
     }
   }

@@ -13,7 +13,7 @@ const createRule = {
 
 class AuthIdaasLoginController extends Controller {
   /**
-   * Idaas 登录方法
+   * 统一身份认证登录方法
    */
   async index() {
     const { ctx } = this;
@@ -24,7 +24,7 @@ class AuthIdaasLoginController extends Controller {
     const password = ctx.request.body.password;
 
     try {
-      // 请求 Idaas 接口获取 access_token, refresh_token, locale
+      // 请求统一身份认证接口获取 access_token, refresh_token, locale
       const idaas = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.login, {
         method: 'POST',
         headers: {
@@ -37,7 +37,7 @@ class AuthIdaasLoginController extends Controller {
       });
 
       if (idaas.status === 200) {
-        // Idaas 登录成功
+        // 统一身份认证登录成功
         const idaas_cookies = idaas.headers['set-cookie'].map(cookie => cookie.split(';')[0]);
         // 请求登录教务系统
         const login = await this.tryLogin(ctx.app.config.idaas.base + ctx.app.config.idaas.sso, idaas_cookies);
@@ -69,13 +69,13 @@ class AuthIdaasLoginController extends Controller {
           await this.databaseLogin(username, password);
         }
       } else if (idaas.status === 401) {
-        // Idaas 密码错误
+        // 统一身份认证密码错误
         ctx.body = {
           code: 401,
           message: '密码错误'
         };
       } else {
-        // Idaas 其他错误
+        // 统一身份认证其他错误
         ctx.body = {
           code: idaas.res.statusCode,
           message: idaas.res.statusMessage

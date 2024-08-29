@@ -10,7 +10,7 @@ const createRule = {
 
 class AuthIdaasForgetResetController extends Controller {
   /**
-   * Idaas 修改密码
+   * 统一身份认证密码重置
    */
   async index() {
     const { ctx } = this;
@@ -32,13 +32,31 @@ class AuthIdaasForgetResetController extends Controller {
         // 修改成功
         ctx.body = {
           code: 200,
-          message: '统一身份认证密码修改成功'
+          message: '统一身份认证密码重置成功'
         };
-      } else if (result.data.errorCode === '200001009') {
-        // 密码不可以与最近1个密码相同
+      } else if (result.data.details.policy === 'usedRecord') {
+        // 密码使用过问题
         ctx.body = {
           code: 400,
           message: '密码不可以与最近1个密码相同'
+        };
+      } else if (result.data.details.policy === 'passwordLength') {
+        // 密码长度问题
+        ctx.body = {
+          code: 400,
+          message: `密码长度必须为${result.data.details.min}-${result.data.details.max}位字符`
+        };
+      } else if (result.data.details.policy === 'uppercase') {
+        // 密码大写字符问题
+        ctx.body = {
+          code: 400,
+          message: `密码必须包含${result.data.details.min}位大写英文字母`
+        };
+      } else if (result.data.details.policy === 'email') {
+        // 邮箱前缀问题
+        ctx.body = {
+          code: 400,
+          message: '密码不允许包含主邮箱前缀内容'
         };
       } else {
         // 其他错误
@@ -51,7 +69,7 @@ class AuthIdaasForgetResetController extends Controller {
       // 无法访问接口
       ctx.body = {
         code: 500,
-        message: 'Idaas 重置密码接口请求失败'
+        message: '统一身份认证重置密码接口请求失败'
       };
     }
   }

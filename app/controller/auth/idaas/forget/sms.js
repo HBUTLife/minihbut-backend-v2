@@ -53,14 +53,14 @@ class AuthIdaasForgetSmsController extends Controller {
         // 其他错误
         ctx.body = {
           code: 500,
-          message: 'Idaas 发生其他错误'
+          message: '统一身份认证系统接口发生其他错误'
         };
       }
     } catch (err) {
       // 无法访问
       ctx.body = {
         code: 500,
-        message: 'Idaas 短信接口请求失败'
+        message: '统一身份认证短信接口请求失败'
       };
     }
   }
