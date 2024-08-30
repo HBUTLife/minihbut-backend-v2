@@ -12,7 +12,7 @@ class InfoTermController extends Controller {
     const user = ctx.user_info;
     // Redis 获取个人学期缓存
     const cache = await ctx.app.redis.get(`term_${user.student_id}`);
-    if (cache) {
+    if (cache && JSON.parse(cache).length > 0) {
       // 存在缓存
       ctx.body = {
         code: 201,
