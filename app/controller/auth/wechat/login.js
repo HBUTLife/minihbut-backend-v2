@@ -42,7 +42,8 @@ class AuthWechatLoginController extends Controller {
             college: user.college,
             class: user.class,
             major: user.major,
-            grade: user.grade
+            grade: user.grade,
+            grade_enter: user.grade_enter
           };
 
           ctx.body = {
