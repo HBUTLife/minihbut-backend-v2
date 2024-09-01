@@ -58,6 +58,12 @@ class TimetablePersonTodayController extends Controller {
             }
           }
         }
+        // 排序
+        day_tables.sort((a, b) => {
+          const sectionA = parseInt(a.section.split(',')[0]);
+          const sectionB = parseInt(b.section.split(',')[0]);
+          return sectionA - sectionB;
+        });
         // 存入Redis
         const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(day_tables), 'EX', 600); // 10 分钟
         if (cache_update === 'OK') {
