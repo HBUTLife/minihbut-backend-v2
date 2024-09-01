@@ -25,7 +25,7 @@ class TimetablePersonTodayController extends Controller {
     } else {
       // 不存在缓存，从数据库中获取并存入 Redis
       const today_timestamp = dayjs().unix();
-      const terms = await ctx.app.mysql.query('SELECT * FROM term WHERE start_timestamp >= ? AND end_timestamp <= ?', [
+      const terms = await ctx.app.mysql.query('SELECT * FROM term WHERE start_timestamp <= ? AND end_timestamp >= ?', [
         today_timestamp,
         today_timestamp
       ]);
@@ -51,7 +51,7 @@ class TimetablePersonTodayController extends Controller {
           const weeks = item.week.split(',');
           if (weeks.includes(week.toString())) {
             // 检查课程是否已经结束
-            const check = this.checkTime(item);
+            const check = this.checkTime(item, today_timestamp);
             if (!check) {
               // 未结束
               day_tables.push(item);
@@ -59,7 +59,7 @@ class TimetablePersonTodayController extends Controller {
           }
         }
         // 存入Redis
-        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(day_tables), 'EX', 1800); // 30 分钟
+        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(day_tables), 'EX', 600); // 10 分钟
         if (cache_update === 'OK') {
           // 存入成功
           ctx.body = {
@@ -85,13 +85,12 @@ class TimetablePersonTodayController extends Controller {
   }
 
   // 检查课程是否结束
-  checkTime(data) {
+  checkTime(data, timestamp) {
     const sections = data.section.split(',');
     const end_section = sections[sections.length - 1]; // 课程最后节次
     const end_time = this.getEndTime(end_section);
-    const now = dayjs().unix(); // 现在时间戳
     const end_timestamp = dayjs().hour(end_time.h).minute(end_time.m).second(0).unix(); // 课程结束时间戳
-    if (now > end_timestamp) {
+    if (timestamp > end_timestamp) {
       // 课程已经结束了
       return true;
     }
@@ -101,7 +100,7 @@ class TimetablePersonTodayController extends Controller {
   // 获取节次结束时间
   getEndTime(section) {
     // eslint-disable-next-line default-case
-    switch (section) {
+    switch (parseInt(section)) {
       case 1:
         return { h: 9, m: 5 }; // 09:05
       case 2:
