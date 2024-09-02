@@ -65,7 +65,7 @@ class TimetablePersonTodayController extends Controller {
           return sectionA - sectionB;
         });
         // 存入Redis
-        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(day_tables), 'EX', 600); // 10 分钟
+        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(day_tables), 'EX', 300); // 5 分钟
         if (cache_update === 'OK') {
           // 存入成功
           ctx.body = {

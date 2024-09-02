@@ -11,7 +11,7 @@ class InfoTermController extends Controller {
     // 初始化个人信息
     const user = ctx.user_info;
     // Redis 获取个人学期缓存
-    const cache = await ctx.app.redis.get(`term_${user.grade_enter}`);
+    const cache = await ctx.app.redis.get(`info_term_${user.grade_enter}`);
     if (cache) {
       // 存在缓存
       ctx.body = {
