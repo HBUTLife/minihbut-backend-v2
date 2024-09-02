@@ -44,6 +44,12 @@ module.exports = appInfo => {
     reset: '/api/v1/idaas-idp.hbut.edu.cn/set_password'
   };
 
+  // 位置服务配置
+  config.lbs = {
+    api_url: 'https://apis.map.qq.com/ws/weather/v1', // 腾讯位置服务
+    api_key: 'SQVBZ-XXSK4-ZGAUF-KIJTU-A4PVS-6UFBW'
+  };
+
   // 小程序配置
   config.wechat = {
     app_id: 'wx42a9beac92f39a9a',

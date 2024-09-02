@@ -9,6 +9,7 @@ const white_list = [
   '/auth/idaas/forget/reset',
   '/auth/wechat/login',
   '/info/extra',
+  '/info/weather',
   '/timetable/person/ics'
 ];
 
