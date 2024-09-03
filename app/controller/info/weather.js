@@ -34,7 +34,6 @@ class InfoWeatherController extends Controller {
         },
         dataType: 'json'
       });
-      console.log(ctx.app.config.lbs.key);
       if (lbs.data.status === 0) {
         // 获取成功
         const result = lbs.data.result.realtime[0];
