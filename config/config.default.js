@@ -11,7 +11,7 @@ module.exports = appInfo => {
   const config = (exports = {});
 
   // 中间件配置
-  config.middleware = ['jwtVerifier', 'errorHandler'];
+  config.middleware = ['responseStatus', 'jwtVerifier', 'errorHandler'];
 
   // 安全设置
   config.security = {
@@ -67,6 +67,19 @@ module.exports = appInfo => {
   config.encryption = {
     secret: 'JGwjz4uunJDxbtcntZzaGm3mPukpnoHP' // 服务端私钥
   };
+
+  // 无需鉴权的接口
+  config.whitelist = [
+    '/',
+    '/auth/idaas/login',
+    '/auth/idaas/forget/sms',
+    '/auth/idaas/forget/code',
+    '/auth/idaas/forget/reset',
+    '/auth/wechat/login',
+    '/info/extra',
+    '/info/weather',
+    '/timetable/person/ics'
+  ];
 
   // 上传文件配置
   config.multipart = {
