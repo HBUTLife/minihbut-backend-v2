@@ -9,11 +9,6 @@ class InfoWeatherController extends Controller {
    */
   async index() {
     const { ctx } = this;
-    let adcode = '420111'; // 默认洪山区
-    // 若有 adcode 则查询指定地区
-    // if (ctx.query.adcode) {
-    //   adcode = ctx.query.adcode;
-    // }
     // Redis Key
     const cache_key = `info_weather_${adcode}`;
     // Redis 获取实时天气
@@ -30,7 +25,7 @@ class InfoWeatherController extends Controller {
       const lbs = await ctx.curl(ctx.app.config.lbs.base + ctx.app.config.lbs.weather, {
         data: {
           key: ctx.app.config.lbs.key,
-          adcode
+          adcode: '420111' // 获取洪山区天气
         },
         dataType: 'json'
       });
@@ -54,7 +49,7 @@ class InfoWeatherController extends Controller {
             lbs_update_time: result.update_time // 接口所返回的更新时间
           }
         };
-        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 120); // 2 分钟过期
+        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 60); // 1 分钟过期
         if (cache_update === 'OK') {
           // 更新成功
           ctx.body = {
