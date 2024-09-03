@@ -51,7 +51,7 @@ class InfoWeatherController extends Controller {
             lbs_update_time: result.update_time // 接口所返回的更新时间
           }
         };
-        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 60); // 1 分钟过期
+        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 300); // 5 分钟过期
         if (cache_update === 'OK') {
           // 更新成功
           ctx.body = {

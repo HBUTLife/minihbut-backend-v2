@@ -46,8 +46,7 @@ module.exports = appInfo => {
   config.lbs = {
     base: 'https://apis.map.qq.com',
     weather: '/ws/weather/v1', // 天气服务 (10000 QPS/day, 5 QPS/second)
-    ip: '/ws/location/v1/ip', // IP 定位服务 (10000 QPS/day, 5 QPS/second)
-    key: 'SQVBZ-XXSK4-ZGAUF-KIJTU-A4PVS-6UFBW' // 腾讯位置服务 Key
+    key: 'B7YBZ-HBZWN-OXUFL-SRLKX-FJEHT-T2F23' // 腾讯位置服务 Key
   };
 
   // 小程序配置
