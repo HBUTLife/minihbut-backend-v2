@@ -24,7 +24,7 @@ class InfoTodayController extends Controller {
     } else {
       // 不存在缓存
       const today_timestamp = today.unix();
-      const terms = await ctx.app.mysql.query('SELECT * FROM term WHERE start_timestamp >= ? AND end_timestamp <= ?', [
+      const terms = await ctx.app.mysql.query('SELECT * FROM term WHERE start_timestamp <= ? AND end_timestamp >= ?', [
         today_timestamp,
         today_timestamp
       ]);
