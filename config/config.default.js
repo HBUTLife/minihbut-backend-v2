@@ -45,8 +45,8 @@ module.exports = appInfo => {
   // 腾讯位置服务接口配置
   config.lbs = {
     base: 'https://apis.map.qq.com',
-    weather: '/ws/weather/v1', // 天气服务
-    ip: '/ws/location/v1/ip', // IP 定位服务
+    weather: '/ws/weather/v1', // 天气服务 (10000 QPS/day, 5 QPS/second)
+    ip: '/ws/location/v1/ip', // IP 定位服务 (10000 QPS/day, 5 QPS/second)
     key: 'SQVBZ-XXSK4-ZGAUF-KIJTU-A4PVS-6UFBW' // 腾讯位置服务 Key
   };
 

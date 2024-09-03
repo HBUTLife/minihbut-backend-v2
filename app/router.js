@@ -32,4 +32,6 @@ module.exports = app => {
   router.get('/timetable/person/ics', controller.timetable.person.ics.index);
   router.get('/timetable/class/search', controller.timetable.class.search.index);
   router.get('/timetable/class/detail', controller.timetable.class.detail.index);
+  router.put('/user/avatar', controller.user.avatar.upload);
+  router.post('/user/avatar', controller.user.avatar.update);
 };
