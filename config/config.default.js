@@ -68,6 +68,13 @@ module.exports = appInfo => {
     secret: 'JGwjz4uunJDxbtcntZzaGm3mPukpnoHP' // 服务端私钥
   };
 
+  // 上传文件配置
+  config.multipart = {
+    fileSize: '5mb',
+    mode: 'stream',
+    fileExtensions: ['.png', '.jpg', '.jpeg', '.bmp', '.webp']
+  };
+
   return {
     ...config
   };

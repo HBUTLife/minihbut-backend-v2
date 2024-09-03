@@ -2,85 +2,92 @@
 
 const { Controller } = require('egg');
 const dayjs = require('dayjs');
-
-// 定义创建接口的请求参数规则
-const createRule = {
-  url: 'string'
-};
+const Minio = require('minio');
+const crypto = require('crypto');
 
 class UserAvatarController extends Controller {
   /**
    * 上传头像
    */
-  async upload() {}
-
-  /**
-   * 更新头像
-   */
-  async update() {
+  async index() {
     const { ctx } = this;
-    // 参数校验
-    ctx.validate(createRule, ctx.request.body);
-    // 获取参数
-    const url = ctx.request.body.url;
-    // 验证图片链接是否为白名单内域名名下
-    const domainWhitelist = ['stslb.com'];
-    const isWhitelisted = domainWhitelist.some(domain => {
-      const pattern = new RegExp(`^https?:\/\/([a-zA-Z0-9_-]+\\.)*${domain.replace('.', '\\.')}(\/|$)`);
-      return pattern.test(url);
-    });
-    if (!isWhitelisted) {
-      ctx.body = {
-        code: 400,
-        message: '图片链接不属于白名单域名'
-      };
-      return;
-    }
-    // 验证是否存在
-    const testImage = await ctx.curl(url);
-    if (testImage.status !== 200) {
-      ctx.body = {
-        code: 400,
-        message: '链接图片不存在'
-      };
-      return;
-    }
-    // 验证是否为图片文件
-    if (testImage.headers['content-type'].split('/')[0] !== 'image') {
-      ctx.body = {
-        code: 400,
-        message: '文件类型不正确'
-      };
-      return;
-    }
-    // 初始化个人信息
-    const user = ctx.user_info;
-    // 更新时间
-    const update_time = dayjs().unix();
-    // 更新数据
-    const hit = await ctx.app.mysql.update(
-      'user',
-      { avatar: url, update_time },
-      { where: { student_id: user.student_id } }
-    );
-    if (hit.affectedRows === 1) {
-      // 更新成功
-      ctx.body = {
-        code: 200,
-        message: '头像更新成功',
-        data: {
-          student_id: user.student_id,
-          avatar: url,
-          update_time
-        }
-      };
-    } else {
-      // 更新失败
+    // 获取文件
+    try {
+      const fileStream = await ctx.getFileStream();
+      // 初始化个人信息
+      const user = ctx.user_info;
+      // 文件流转换为 Buffer
+      let fileBuffer;
+      await this.fileStreamToBuffer(fileStream).then(buffer => {
+        fileBuffer = buffer;
+      });
+      // 获取文件 MD5
+      const hash = crypto.createHash('md5');
+      hash.update(fileBuffer);
+      const md5 = hash.digest('hex');
+      // 获取文件扩展名
+      const fileExtension = fileStream.filename.split('.').pop().toLowerCase();
+      // 文件路径
+      const filePath = `image/${md5}.${fileExtension}`;
+      // 上传
+      const bucket = 'minihbut';
+      const minioClient = new Minio.Client(ctx.app.config.minio);
+      await minioClient.putObject(bucket, filePath, fileBuffer, {
+        'content-type': fileStream.mimeType
+      });
+      // 更新头像链接
+      const update_time = dayjs().unix();
+      const url = `https://i0.stslb.com/sfs/${bucket}/${filePath}`;
+      const hit = await ctx.app.mysql.update(
+        'user',
+        { avatar: url, update_time },
+        { where: { student_id: user.student_id } }
+      );
+      if (hit.affectedRows === 1) {
+        // 更新成功
+        ctx.body = {
+          code: 200,
+          message: '头像上传成功',
+          data: {
+            avatar: url,
+            student_id: user.student_id,
+            update_time
+          }
+        };
+      } else {
+        // 更新失败
+        ctx.body = {
+          code: 500,
+          message: '头像上传失败'
+        };
+      }
+    } catch (err) {
+      // 错误处理
       ctx.body = {
         code: 500,
-        message: '头像更新失败'
+        message: err.message
       };
     }
+  }
+
+  /**
+   * FileStream 转 Buffer
+   * @param {*} fileStream
+   * @returns
+   */
+  async fileStreamToBuffer(fileStream) {
+    return new Promise((resolve, reject) => {
+      const chunks = [];
+      fileStream.on('data', chunk => {
+        chunks.push(chunk);
+      });
+      fileStream.on('end', () => {
+        resolve(Buffer.concat(chunks));
+      });
+      fileStream.on('error', err => {
+        reject(err);
+      });
+    });
   }
 }
 
