@@ -26,7 +26,12 @@ class InfoTermController extends Controller {
         [parseInt(user.grade_enter)]
       );
       // 存入 Redis
-      const cache_update = await ctx.app.redis.set(`term_${user.grade_enter}`, JSON.stringify(mysql), 'EX', 604800); // 7 天过期
+      const cache_update = await ctx.app.redis.set(
+        `info_term_${user.grade_enter}`,
+        JSON.stringify(mysql),
+        'EX',
+        604800
+      ); // 7 天过期
       if (cache_update === 'OK') {
         // 缓存成功
         ctx.body = {
