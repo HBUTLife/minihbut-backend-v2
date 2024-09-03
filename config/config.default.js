@@ -78,6 +78,7 @@ module.exports = appInfo => {
     '/auth/wechat/login',
     '/info/extra',
     '/info/weather',
+    '/info/swiper',
     '/timetable/person/ics'
   ];
 
