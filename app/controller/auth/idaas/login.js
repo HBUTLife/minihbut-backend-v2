@@ -120,7 +120,7 @@ class AuthIdaasLoginController extends Controller {
           code: 202,
           message: '登录成功',
           data: {
-            info,
+            info: { ...info, avatar: local[0].avatar },
             token: this.signToken(info)
           }
         };
@@ -238,7 +238,7 @@ class AuthIdaasLoginController extends Controller {
         delete parse_info.update_time;
         return {
           status: 1,
-          data: parse_info
+          data: { ...parse_info, avatar: hit[0].avatar }
         };
       }
       // 更新失败
@@ -259,7 +259,7 @@ class AuthIdaasLoginController extends Controller {
       delete parse_info.update_time;
       return {
         status: 1,
-        data: parse_info
+        data: { ...parse_info, avatar: null }
       };
     }
     // 插入失败
