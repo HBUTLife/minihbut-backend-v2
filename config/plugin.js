@@ -18,10 +18,5 @@ module.exports = {
   redis: {
     enable: true,
     package: 'egg-redis'
-  },
-
-  multipart: {
-    enable: true,
-    package: 'egg-multipart'
   }
 };

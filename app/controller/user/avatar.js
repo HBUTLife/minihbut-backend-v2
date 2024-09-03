@@ -14,6 +14,15 @@ class UserAvatarController extends Controller {
     // 获取文件
     try {
       const fileStream = await ctx.getFileStream();
+      // 检查文件类型是否为图片
+      if (fileStream.mimeType.split('/')[0] !== 'image') {
+        ctx.status = 400;
+        ctx.body = {
+          code: 400,
+          message: '非法文件类型'
+        };
+        return;
+      }
       // 初始化个人信息
       const user = ctx.user_info;
       // 文件流转换为 Buffer
@@ -63,8 +72,9 @@ class UserAvatarController extends Controller {
       }
     } catch (err) {
       // 错误处理
+      ctx.status = err.status;
       ctx.body = {
-        code: 500,
+        code: err.status,
         message: err.message
       };
     }

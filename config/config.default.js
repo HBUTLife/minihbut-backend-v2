@@ -70,9 +70,8 @@ module.exports = appInfo => {
 
   // 上传文件配置
   config.multipart = {
-    fileSize: '5mb',
     mode: 'stream',
-    fileExtensions: ['.png', '.jpg', '.jpeg', '.bmp', '.webp']
+    fileSize: '3mb' // 限制上传最大 3 MB
   };
 
   return {
