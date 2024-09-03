@@ -19,7 +19,7 @@ class AuthService extends Service {
       }
     });
     // 获取并解密密码
-    const password = tripledes.decrypt(user[0].password, ctx.app.config.passkey).toString(cryptojs.enc.Utf8);
+    const password = tripledes.decrypt(user[0].password, ctx.app.config.encryption.secret).toString(cryptojs.enc.Utf8);
     try {
       // 请求统一身份认证接口获取 access_token, refresh_token, locale
       const idaas = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.login, {

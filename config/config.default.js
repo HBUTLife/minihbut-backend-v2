@@ -20,34 +20,34 @@ module.exports = appInfo => {
     }
   };
 
-  // 教务系统连接配置
+  // 教务系统接口配置
   config.jwxt = {
     base: 'https://jwxt.hbut.edu.cn',
-    login: '/admin/login',
-    info: '/admin/cjgl/xscjbbdy/printdgxscj',
-    score: '/admin/xsd/xsdcjcx/xsdQueryXscjList',
-    rank: '/admin/cjgl/xscjbbdy/getXscjpm',
-    exam: '/admin/xsd/kwglXsdKscx/ajaxXsksList',
-    classroom: '/admin/system/jxzy/jsxx/getZyKjs',
-    upload: '/admin/system/attachment/upload',
-    timetable: '/admin/pkgl/xskb/sdpkkbList',
-    lesson: '/admin/jsd/qxzkb/querylist'
+    info: '/admin/cjgl/xscjbbdy/printdgxscj', // 用户信息
+    score: '/admin/xsd/xsdcjcx/xsdQueryXscjList', // 成绩信息
+    rank: '/admin/cjgl/xscjbbdy/getXscjpm', // 排名信息
+    exam: '/admin/xsd/kwglXsdKscx/ajaxXsksList', // 考试信息
+    classroom: '/admin/system/jxzy/jsxx/getZyKjs', // 空教室
+    timetable: '/admin/pkgl/xskb/sdpkkbList', // 课表信息
+    lesson: '/admin/jsd/qxzkb/querylist' // 全校课表信息
   };
 
-  // idaas连接配置
+  // 统一身份认证接口配置
   config.idaas = {
     base: 'https://idaas-idp.hbut.edu.cn',
-    login: '/api/v1/idaas-idp.hbut.edu.cn/login',
-    sso: '/sso/tn-b6844f43ad554d15aaa73f4ed4319a52/ai-4153833891724dbcb30dea72926feb37/cas?service=https%3A%2F%2Fjwxt.hbut.edu.cn%2Fadmin%2Fcaslogin%2Fgrkb',
-    sms: '/api/v1/idaas-idp.hbut.edu.cn/forget_password/v2/sms',
-    code: '/api/v1/idaas-idp.hbut.edu.cn/forget_password/v2/sms/token',
-    reset: '/api/v1/idaas-idp.hbut.edu.cn/set_password'
+    login: '/api/v1/idaas-idp.hbut.edu.cn/login', // 登录
+    sso: '/sso/tn-b6844f43ad554d15aaa73f4ed4319a52/ai-4153833891724dbcb30dea72926feb37/cas?service=https%3A%2F%2Fjwxt.hbut.edu.cn%2Fadmin%2Fcaslogin%2Fgrkb', // 单点验证
+    sms: '/api/v1/idaas-idp.hbut.edu.cn/forget_password/v2/sms', // 短信发送
+    code: '/api/v1/idaas-idp.hbut.edu.cn/forget_password/v2/sms/token', // 验证码检测
+    reset: '/api/v1/idaas-idp.hbut.edu.cn/set_password' // 设置密码
   };
 
-  // 位置服务配置
+  // 腾讯位置服务接口配置
   config.lbs = {
-    api_url: 'https://apis.map.qq.com/ws/weather/v1', // 腾讯位置服务
-    api_key: 'SQVBZ-XXSK4-ZGAUF-KIJTU-A4PVS-6UFBW'
+    base: 'https://apis.map.qq.com',
+    weather: '/ws/weather/v1', // 天气服务
+    ip: '/ws/location/v1/ip', // IP 定位服务
+    key: 'SQVBZ-XXSK4-ZGAUF-KIJTU-A4PVS-6UFBW' // 腾讯位置服务 Key
   };
 
   // 小程序配置
@@ -59,12 +59,14 @@ module.exports = appInfo => {
 
   // 公共 jwt 配置
   config.jwt = {
-    secret: 'qbiWBcUR9qEEnNLkoQ7Yk4ccpX6jcTuz',
-    expiresIn: 365 * 86400
+    secret: 'qbiWBcUR9qEEnNLkoQ7Yk4ccpX6jcTuz', // jwt 服务端私钥
+    expiresIn: 365 * 86400 // token 过期时间 365 天
   };
 
-  // 密码加密配置
-  config.passkey = 'JGwjz4uunJDxbtcntZzaGm3mPukpnoHP';
+  // 用户密码加密配置
+  config.encryption = {
+    secret: 'JGwjz4uunJDxbtcntZzaGm3mPukpnoHP' // 服务端私钥
+  };
 
   return {
     ...config

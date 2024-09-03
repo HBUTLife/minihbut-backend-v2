@@ -27,9 +27,9 @@ class InfoWeatherController extends Controller {
       };
     } else {
       // 不存在缓存
-      const lbs = await ctx.curl(ctx.app.config.lbs.api_url, {
+      const lbs = await ctx.curl(ctx.app.config.lbs.base + ctx.app.config.lbs.weather, {
         data: {
-          key: ctx.app.config.lbs.api_key,
+          key: ctx.app.config.lbs.key,
           adcode
         },
         dataType: 'json'

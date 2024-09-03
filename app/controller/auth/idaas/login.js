@@ -102,7 +102,10 @@ class AuthIdaasLoginController extends Controller {
 
     if (local.length > 0) {
       // 拥有该用户，进行比对
-      if (password === tripledes.decrypt(local[0].password, this.ctx.app.config.passkey).toString(cryptojs.enc.Utf8)) {
+      if (
+        password ===
+        tripledes.decrypt(local[0].password, this.ctx.app.config.encryption.secret).toString(cryptojs.enc.Utf8)
+      ) {
         // 密码正确
         const info = {
           student_id: local[0].student_id,
@@ -205,7 +208,7 @@ class AuthIdaasLoginController extends Controller {
     const parse_info = {
       student_id: origin_info.xh,
       name: origin_info.xm,
-      password: tripledes.encrypt(password, ctx.app.config.passkey).toString(),
+      password: tripledes.encrypt(password, ctx.app.config.encryption.secret).toString(),
       college: origin_info.yxmc,
       class: origin_info.bjmc,
       major: origin_info.zymc,
