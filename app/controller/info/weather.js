@@ -9,6 +9,8 @@ class InfoWeatherController extends Controller {
    */
   async index() {
     const { ctx } = this;
+    // 天气位置
+    const adcode = '420111'; // 湖北省武汉市洪山区
     // Redis Key
     const cache_key = `info_weather_${adcode}`;
     // Redis 获取实时天气
@@ -25,7 +27,7 @@ class InfoWeatherController extends Controller {
       const lbs = await ctx.curl(ctx.app.config.lbs.base + ctx.app.config.lbs.weather, {
         data: {
           key: ctx.app.config.lbs.key,
-          adcode: '420111' // 获取洪山区天气
+          adcode
         },
         dataType: 'json'
       });
