@@ -23,5 +23,14 @@ exports.redis = {
   }
 };
 
+// MinIO 配置
+exports.minio = {
+  endPoint: '',
+  port: 443,
+  useSSL: true,
+  accessKey: '',
+  secretKey: ''
+};
+
 // 其他信息获取配置
 exports.info_extra = '';
