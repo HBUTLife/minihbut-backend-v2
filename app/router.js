@@ -23,6 +23,7 @@ module.exports = app => {
   router.get('/info/extra', controller.info.extra.index);
   router.get('/info/weather', controller.info.weather.index);
   router.get('/info/swiper', controller.info.swiper.index);
+  router.post('/info/swiper', controller.info.swiper.count);
   router.get('/timetable/person/list', controller.timetable.person.list.index);
   router.get('/timetable/person/today', controller.timetable.person.today.index);
   router.get('/timetable/person/update', controller.timetable.person.update.index);
