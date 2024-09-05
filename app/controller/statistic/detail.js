@@ -2,6 +2,7 @@
 
 const { Controller } = require('egg');
 const cryptojs = require('crypto-js');
+const dayjs = require('dayjs');
 
 // 定义创建接口的请求参数规则
 const createRule = {
@@ -82,7 +83,8 @@ class StatisticDetailController extends Controller {
         between_80_90: ((section2 / total_number) * 100).toFixed(2).toString() + '%', // 80-90分比例
         between_70_80: ((section3 / total_number) * 100).toFixed(2).toString() + '%', // 70-80分比例
         between_60_70: ((section4 / total_number) * 100).toFixed(2).toString() + '%', // 60-70分比例
-        down_60: ((section5 / total_number) * 100).toFixed(2).toString() + '%' // 60分以下比例
+        down_60: ((section5 / total_number) * 100).toFixed(2).toString() + '%', // 60分以下比例
+        last_update: dayjs().unix() // 最后更新时间
       };
       // 存入 Redis
       const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(output), 'EX', 3600); // 1 小时过期
