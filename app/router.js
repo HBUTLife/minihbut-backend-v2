@@ -32,7 +32,8 @@ module.exports = app => {
   router.post('/timetable/person/edit', controller.timetable.person.edit.index);
   router.get('/timetable/person/export', controller.timetable.person.export.index);
   router.get('/timetable/person/ics', controller.timetable.person.ics.index);
-  router.get('/timetable/class/search', controller.timetable.class.search.index);
+  router.get('/timetable/class/search', controller.timetable.class.search.index); // 即将弃用
+  router.get('/timetable/class/list', controller.timetable.class.list.index);
   router.get('/timetable/class/detail', controller.timetable.class.detail.index);
   router.get('/user/avatar', controller.user.avatar.get.index);
   router.post('/user/avatar/upload', controller.user.avatar.upload.index);
