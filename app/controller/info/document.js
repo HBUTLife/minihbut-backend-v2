@@ -33,7 +33,7 @@ class InfoDocumentController extends Controller {
       };
     } else {
       // 无缓存，获取文档链接
-      const query = await ctx.app.mysql.query('SELECT title, url, full_screen, cahce_time FROM document WHERE id = ?', [
+      const query = await ctx.app.mysql.query('SELECT title, url, full_screen, cache_time FROM document WHERE id = ?', [
         id
       ]);
 
