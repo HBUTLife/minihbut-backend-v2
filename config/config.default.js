@@ -75,10 +75,15 @@ module.exports = appInfo => {
     '/auth/idaas/forget/code',
     '/auth/idaas/forget/reset',
     '/auth/wechat/login',
-    '/info/extra',
-    '/info/weather',
+    '/timetable/person/ics',
     '/info/swiper',
-    '/timetable/person/ics'
+    '/info/swiper/click',
+    '/info/urgent',
+    '/info/weather',
+    '/info/document',
+    '/info/share',
+    '/info/static',
+    '/info/extra' // 即将弃用
   ];
 
   // 上传文件配置
