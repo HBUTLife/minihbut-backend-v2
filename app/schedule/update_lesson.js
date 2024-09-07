@@ -115,8 +115,7 @@ class UpdateLesson extends Subscription {
       星期四: 4,
       星期五: 5,
       星期六: 6,
-      星期日: 7,
-      星期天: 7
+      星期日: 7
     };
     return days[value];
   }
@@ -128,8 +127,7 @@ class UpdateLesson extends Subscription {
 
   // 处理
   handle(timeAndPlace) {
-    const a = timeAndPlace.replaceAll('VR实验室 ', ''); // 删除 VR实验室 前缀
-    let arr = a.split(' ');
+    let arr = timeAndPlace.split(' ');
     arr = arr.map(item => {
       if (this.isWeek(item)) {
         // 处理周次
@@ -203,7 +201,7 @@ class UpdateLesson extends Subscription {
           // 写入数据库
           await ctx.app.mysql.insert('lesson', {
             name: item.name,
-            location: item.timeAndPlace[i + 3],
+            location: item.timeAndPlace[i + 3].replace('【', '').replace('】', '').replace(';', ''),
             teacher: item.teacher,
             classes: item.classes.replace('...', ''),
             week: item.timeAndPlace[i].toString(),

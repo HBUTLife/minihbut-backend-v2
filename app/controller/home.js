@@ -6,6 +6,7 @@ class HomeController extends Controller {
   async index() {
     const { ctx } = this;
 
+    ctx.app.runSchedule('update_lesson');
     ctx.body = { code: 200, message: 'MiniHBUT API is working' };
   }
 }
