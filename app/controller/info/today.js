@@ -78,8 +78,8 @@ class InfoTodayController extends Controller {
 
   /**
    * 获取星期
-   * @param {number} day
-   * @returns
+   * @param {number} day 原始星期（0-6）
+   * @return {number} 返回星期（1-7）
    */
   getTodayDay(day) {
     switch (day) {

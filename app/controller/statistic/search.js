@@ -44,36 +44,21 @@ class StatisticSearchController extends Controller {
       };
     } else {
       // 不存在缓存，则通过数据库查询
-      const result = await this.app.mysql.query('SELECT * FROM score WHERE name LIKE ? OR teacher LIKE ?', [
-        `%${keyword}%`,
-        `%${keyword}%`
-      ]);
+      const result = await this.app.mysql.query(
+        'SELECT DISTINCT name, teacher FROM score WHERE (name LIKE ? OR teacher LIKE ?) AND teacher IS NOT NULL',
+        [`%${keyword}%`, `%${keyword}%`]
+      );
 
       if (result.length > 0) {
-        // 有结果
-        // 遍历查重并格式化
-        const search_list = [];
-        for (const item of result) {
-          const count = search_list.filter(ele => ele.name === item.name && ele.teacher === item.teacher);
-
-          if (count.length === 0 && item.teacher) {
-            // 不存在则添加
-            search_list.push({
-              name: item.name,
-              teacher: item.teacher
-            });
-          }
-        }
-
-        // 存入 Redis
-        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(search_list), 'EX', 3600); // 1 小时过期
+        // 有结果，存入 Redis
+        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(result), 'EX', 3600); // 1 小时过期
 
         if (cache_update === 'OK') {
           // 更新成功
           ctx.body = {
             code: 200,
             message: '给分统计搜索成功',
-            data: search_list
+            data: result
           };
         } else {
           // 更新失败
