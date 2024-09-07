@@ -12,6 +12,7 @@ class TimetableService extends Service {
    */
   async update(student_id, term) {
     const { ctx } = this;
+
     // 获取教务系统用户凭证
     const pass = await ctx.app.mysql.select('user', {
       where: {
@@ -35,14 +36,17 @@ class TimetableService extends Service {
           const data = await this.databaseUpdate(student_id, term, result.data); // 写入 MySQL 并获取原始课表
           const custom = await this.cacheUpdate(student_id, term, data); // 写入 Redis 并获取自定义课表
           const final_data = data.concat(custom);
+
           return {
             status: 1,
             data: final_data
           };
         }
+
         // 无数据
         return { status: 2 };
       }
+
       // uid route 已过期
       return { status: 3 };
     } catch (err) {
@@ -63,6 +67,7 @@ class TimetableService extends Service {
     const { ctx } = this;
     const parse_data = [];
     const last_update = dayjs().unix();
+
     // 首次遍历节次合并
     for (const item of data) {
       const found_index = parse_data.findIndex(
@@ -73,6 +78,7 @@ class TimetableService extends Service {
           value.week === item.zcstr &&
           value.day === parseInt(item.xq)
       );
+
       if (found_index !== -1) {
         // 新数组存在则修改节次
         parse_data[found_index].section += `,${item.djc.toString()}`;
@@ -92,29 +98,34 @@ class TimetableService extends Service {
         });
       }
     }
+
     // 删除数据库内原有数据
     await ctx.app.mysql.delete('timetable', {
       term,
       student_id
     });
+
     // 二次遍历格式化数据并插入数据库
     for (const item of parse_data) {
       // 格式化课程名称
       item.name = item.name
         ? item.name.replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '').replaceAll('</a>', '')
         : '';
+
       // 格式化上课地点
       item.location = item.location
         ? item.location
             .replace(/<a href="javascript:void\(0\);" onclick="openCrkb\('.*?','.*?'\)">/g, '')
             .replaceAll('</a>', '')
         : '';
+
       // 格式化教师
       item.teacher = item.teacher
         ? item.teacher
             .replace(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
             .replaceAll('</a>', '')
         : '';
+
       try {
         // 插入数据
         await ctx.app.mysql.insert('timetable', item);
@@ -123,6 +134,7 @@ class TimetableService extends Service {
         console.log(err);
       }
     }
+
     // 返回处理完数据
     return parse_data;
   }
@@ -136,6 +148,7 @@ class TimetableService extends Service {
    */
   async cacheUpdate(student_id, term, data) {
     const { ctx } = this;
+
     // 获取自定义课程列表
     const custom = await ctx.app.mysql.select('timetable_custom', {
       where: {
@@ -143,10 +156,13 @@ class TimetableService extends Service {
         student_id
       }
     });
+
     // 将自定义课程加入课表列表
     const final_data = data.concat(custom);
+
     // 写入 Redis
     await ctx.app.redis.set(`timetable_person_${student_id}_${term}`, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
+
     // 返回自定义课程列表
     return custom;
   }

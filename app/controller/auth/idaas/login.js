@@ -89,8 +89,8 @@ class AuthIdaasLoginController extends Controller {
 
   /**
    * 使用数据库信息登录
-   * @param {string} username
-   * @param {string} password
+   * @param {string} username 用户名
+   * @param {string} password 密码
    */
   async databaseLogin(username, password) {
     const { ctx } = this;
@@ -142,9 +142,9 @@ class AuthIdaasLoginController extends Controller {
 
   /**
    * 尝试登录并返回登录过程中所有 Cookie
-   * @param {string} first_url
-   * @param {object} first_cookies
-   * @returns
+   * @param {string} first_url 第一次请求 URL
+   * @param {object} first_cookies 第一次请求 Cookies
+   * @return {*} 返回 Cookies 或 false
    */
   async tryLogin(first_url, first_cookies) {
     const { ctx } = this;
@@ -165,7 +165,7 @@ class AuthIdaasLoginController extends Controller {
           cookies = cookies.concat(result.headers['set-cookie'].map(cookie => cookie.split(';')[0]));
         }
         if (result.status >= 300 && result.status < 400) {
-          const location = result.headers['location'];
+          const location = result.headers.location;
           if (location) {
             await tryRequest(location); // 跳转并等待完成
           }

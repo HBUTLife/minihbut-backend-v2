@@ -15,13 +15,17 @@ class TimetablePersonEditController extends Controller {
    */
   async index() {
     const { ctx } = this;
+
     // 参数校验
     ctx.validate(createRule, ctx.request.body);
+
     // 获取参数
     const id = ctx.request.body.id;
     const term = ctx.request.body.term;
+
     // 初始化个人信息
     const user = ctx.user_info;
+
     // 获取原数据
     const origin = await ctx.app.mysql.select('timetable_custom', {
       where: {
@@ -30,6 +34,7 @@ class TimetablePersonEditController extends Controller {
         student_id: user.student_id
       }
     });
+
     if (origin.length > 0) {
       // 存在
       const data = {
@@ -44,6 +49,7 @@ class TimetablePersonEditController extends Controller {
         student_id: origin[0].student_id,
         last_update: dayjs().unix()
       };
+
       // 更新数据库
       const hit = await ctx.app.mysql.update('timetable_custom', data, {
         where: {
@@ -52,10 +58,12 @@ class TimetablePersonEditController extends Controller {
           student_id: user.student_id
         }
       });
+
       if (hit.affectedRows === 1) {
         // 更新成功，若原有课表缓存则更新缓存
         const cache_key = `timetable_person_${user.student_id}_${term}`;
         const cache = await ctx.app.redis.get(cache_key);
+
         if (cache) {
           // 存在缓存则更新
           const origin_data = JSON.parse(cache);
@@ -64,6 +72,7 @@ class TimetablePersonEditController extends Controller {
           final_data.push(data);
           await ctx.app.redis.set(cache_key, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
         }
+
         ctx.body = {
           code: 200,
           message: '自定义课程编辑成功',

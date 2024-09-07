@@ -9,12 +9,16 @@ class TimetablePersonTodayController extends Controller {
    */
   async index() {
     const { ctx } = this;
+
     // 初始化个人信息
     const user = ctx.user_info;
+
     // Redis Key
     const cache_key = `timetable_person_today_${user.student_id}`;
+
     // Redis 获取今日课表数据
     const cache = await ctx.app.redis.get(cache_key);
+
     if (cache) {
       // 存在缓存
       ctx.body = {
@@ -29,6 +33,7 @@ class TimetablePersonTodayController extends Controller {
         today_timestamp,
         today_timestamp
       ]);
+
       if (terms.length > 0) {
         // 在学期内
         const week = Math.ceil((today_timestamp - terms[0].start_timestamp) / (7 * 24 * 3600));
@@ -37,6 +42,7 @@ class TimetablePersonTodayController extends Controller {
         if (day_origin === 0) {
           day = 7;
         }
+
         // 获取学期和星期符合的所有课程
         const timetable = await this.app.mysql.select('timetable', {
           where: {
@@ -45,6 +51,7 @@ class TimetablePersonTodayController extends Controller {
             term: terms[0].name
           }
         });
+
         // 对周次进行处理和选取
         const day_tables = [];
         for (const item of timetable) {
@@ -52,20 +59,24 @@ class TimetablePersonTodayController extends Controller {
           if (weeks.includes(week.toString())) {
             // 检查课程是否已经结束
             const check = this.checkTime(item, today_timestamp);
+
             if (!check) {
               // 未结束
               day_tables.push(item);
             }
           }
         }
+
         // 排序
         day_tables.sort((a, b) => {
           const sectionA = parseInt(a.section.split(',')[0]);
           const sectionB = parseInt(b.section.split(',')[0]);
           return sectionA - sectionB;
         });
+
         // 存入Redis
         const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(day_tables), 'EX', 300); // 5 分钟
+
         if (cache_update === 'OK') {
           // 存入成功
           ctx.body = {
@@ -96,10 +107,12 @@ class TimetablePersonTodayController extends Controller {
     const end_section = sections[sections.length - 1]; // 课程最后节次
     const end_time = this.getEndTime(end_section);
     const end_timestamp = dayjs().hour(end_time.h).minute(end_time.m).second(0).unix(); // 课程结束时间戳
+
     if (timestamp > end_timestamp) {
       // 课程已经结束了
       return true;
     }
+
     return false;
   }
 

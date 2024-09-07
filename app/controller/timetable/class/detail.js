@@ -14,14 +14,19 @@ class TimetableClassDetailController extends Controller {
    */
   async index() {
     const { ctx } = this;
+
     // 参数校验
     ctx.validate(createRule, ctx.query);
+
     // 获取关键词
     const class_name = ctx.query.class;
+
     // Redis Key
     const cache_key = `timetable_class_detail_${cryptojs.MD5(class_name).toString()}`;
+
     // Redis 获取班级课表缓存
     const cache = await ctx.app.redis.get(cache_key);
+
     if (cache) {
       // 存在缓存
       ctx.body = {
@@ -35,9 +40,11 @@ class TimetableClassDetailController extends Controller {
         'SELECT id, name, location, teacher, week, day, section FROM lesson WHERE classes LIKE ?',
         [`%${class_name}%`]
       );
+
       if (result.length > 0) {
         // 有结果，存入 Redis
         const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(result), 'EX', 86400); // 24 小时过期
+
         if (cache_update === 'OK') {
           // 更新成功
           ctx.body = {

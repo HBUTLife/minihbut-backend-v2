@@ -15,14 +15,19 @@ class TimetablePersonListController extends Controller {
     const { ctx } = this;
     // 参数校验
     ctx.validate(createRule, ctx.query);
+
     // 获取学期
     const term = ctx.query.term;
+
     // 初始化个人信息
     const user = ctx.user_info;
+
     // Redis Key
     const cache_key = `timetable_person_${user.student_id}_${term}`;
+
     // Redis 获取课表列表
     const cache = await ctx.app.redis.get(cache_key);
+
     if (cache) {
       // 存在缓存
       ctx.body = {
@@ -38,6 +43,7 @@ class TimetablePersonListController extends Controller {
           student_id: user.student_id
         }
       });
+
       if (local.length > 0) {
         // 数据库中有数据，存入 Redis
         const custom = await ctx.app.mysql.select('timetable_custom', {
@@ -46,7 +52,7 @@ class TimetablePersonListController extends Controller {
             student_id: user.student_id
           }
         });
-        custom.map(item => {
+        custom.forEach(item => {
           item.self = true;
         });
         const final_data = local.concat(custom);

@@ -33,4 +33,4 @@ exports.minio = {
 };
 
 // 其他信息获取配置
-exports.info_extra = '';
+exports.info_extra = ''; // 即将弃用

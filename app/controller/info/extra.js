@@ -16,8 +16,10 @@ class InfoExtraController extends Controller {
     const { ctx } = this;
     // 参数校验
     ctx.validate(createRule, ctx.query);
+
     // 获取参数
     const url = ctx.query.url;
+
     // 获取内容
     const result = await ctx.curl(`${ctx.app.config.info_extra}${url}?t=${dayjs().unix()}`);
     if (result.status === 200) {

@@ -20,10 +20,13 @@ class TimetablePersonAddController extends Controller {
    */
   async index() {
     const { ctx } = this;
+
     // 参数校验
     ctx.validate(createRule, ctx.request.body);
+
     // 初始化个人信息
     const user = ctx.user_info;
+
     // 获取参数
     const term = ctx.request.body.term;
     const last_update = dayjs().unix();
@@ -39,12 +42,15 @@ class TimetablePersonAddController extends Controller {
       student_id: user.student_id,
       last_update
     };
+
     // 写入数据库
     const hit = await ctx.app.mysql.insert('timetable_custom', data);
+
     if (hit.affectedRows === 1) {
       // 写入成功，若原有课表缓存则更新缓存
       const cache_key = `timetable_person_${user.student_id}_${term}`;
       const cache = await ctx.app.redis.get(cache_key);
+
       if (cache) {
         // 存在缓存则更新
         const origin_data = JSON.parse(cache);
@@ -52,6 +58,7 @@ class TimetablePersonAddController extends Controller {
         origin_data.push(data);
         await ctx.app.redis.set(cache_key, JSON.stringify(origin_data), 'EX', 604800); // 7 天过期
       }
+
       ctx.body = {
         code: 200,
         message: '自定义课程添加成功',

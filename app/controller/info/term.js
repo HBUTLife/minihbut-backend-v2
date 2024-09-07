@@ -10,8 +10,10 @@ class InfoTermController extends Controller {
     const { ctx } = this;
     // 初始化个人信息
     const user = ctx.user_info;
+
     // Redis 获取个人学期缓存
     const cache = await ctx.app.redis.get(`info_term_${user.grade_enter}`);
+
     if (cache) {
       // 存在缓存
       ctx.body = {
@@ -25,6 +27,7 @@ class InfoTermController extends Controller {
         'SELECT name, start_date, start_timestamp, end_date, end_timestamp, total_weeks FROM term WHERE grade_enter >= ? ORDER BY id DESC',
         [parseInt(user.grade_enter)]
       );
+
       // 存入 Redis
       const cache_update = await ctx.app.redis.set(
         `info_term_${user.grade_enter}`,
@@ -32,6 +35,7 @@ class InfoTermController extends Controller {
         'EX',
         604800
       ); // 7 天过期
+
       if (cache_update === 'OK') {
         // 缓存成功
         ctx.body = {

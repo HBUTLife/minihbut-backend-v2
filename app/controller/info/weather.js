@@ -9,12 +9,16 @@ class InfoWeatherController extends Controller {
    */
   async index() {
     const { ctx } = this;
+
     // 天气位置
     const adcode = '420111'; // 湖北省武汉市洪山区
+
     // Redis Key
     const cache_key = `info_weather_${adcode}`;
+
     // Redis 获取实时天气
     const cache = await ctx.app.redis.get(cache_key);
+
     if (cache) {
       // 存在缓存
       ctx.body = {
@@ -51,7 +55,9 @@ class InfoWeatherController extends Controller {
             lbs_update_time: result.update_time // 接口所返回的更新时间
           }
         };
+
         const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 300); // 5 分钟过期
+
         if (cache_update === 'OK') {
           // 更新成功
           ctx.body = {
@@ -78,8 +84,8 @@ class InfoWeatherController extends Controller {
 
   /**
    * 获取图标编号
-   * @param {string} weather
-   * @returns
+   * @param {string} weather 天气名称
+   * @return {number} 图标ID
    */
   getWeatherIcon(weather) {
     // 根据和风天气开源图标指定编号

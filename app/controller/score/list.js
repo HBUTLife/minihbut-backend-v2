@@ -16,14 +16,19 @@ class ScoreListController extends Controller {
     const { ctx } = this;
     // 参数校验
     ctx.validate(createRule, ctx.query);
+
     // 获取学期
     const term = ctx.query.term;
+
     // 初始化个人信息
     const user = ctx.user_info;
+
     // Redis Key
     const cache_key = `score_${user.student_id}_${term}`;
+
     // Redis 获取成绩列表
     const cache = await ctx.app.redis.get(cache_key);
+
     if (cache) {
       // 存在缓存
       ctx.body = {
@@ -56,8 +61,10 @@ class ScoreListController extends Controller {
           if (result.data.total > 0) {
             // 有数据
             const data = await this.processData(user.student_id, term, result.data.results);
+
             // 写入 Redis
             const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 300); // 5 分钟过期
+
             if (cache_update === 'OK') {
               // 更新成功
               ctx.body = {
@@ -83,6 +90,7 @@ class ScoreListController extends Controller {
         } else {
           // 登录过期，重新登录获取
           const reauth = await ctx.service.auth.idaas(user.student_id);
+
           if (reauth.code === 200) {
             // 重新授权成功重新执行
             await this.index();
@@ -114,6 +122,7 @@ class ScoreListController extends Controller {
         if (data.length > 0) {
           // 有数据，写入 Redis
           const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 300); // 5 分钟过期
+
           if (cache_update === 'OK') {
             // 更新成功
             ctx.body = {
@@ -149,6 +158,7 @@ class ScoreListController extends Controller {
    */
   async processData(student_id, term, data) {
     const { ctx } = this;
+
     // 判断是否为全学期，先删除数据库中原有的数据
     if (term === '001') {
       // 是
@@ -162,6 +172,7 @@ class ScoreListController extends Controller {
         term
       });
     }
+
     // 对获取到的数据进行处理并插入数据库
     const parse_data = [];
     const last_update = dayjs().unix();
@@ -185,6 +196,7 @@ class ScoreListController extends Controller {
         student_id,
         last_update
       };
+
       // 插入成绩
       await ctx.app.mysql.insert('score', data);
       parse_data.push(data);

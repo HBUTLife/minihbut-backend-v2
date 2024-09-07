@@ -10,10 +10,13 @@ class InfoTodayController extends Controller {
   async index() {
     const { ctx } = this;
     const today = dayjs();
+
     // Redis Key
     const cache_key = `info_today_${today.format('YYYY-MM-DD')}`;
+
     // Redis 获取今日数据
     const cache = await ctx.app.redis.get(cache_key);
+
     if (cache) {
       // 存在缓存
       ctx.body = {
@@ -28,6 +31,7 @@ class InfoTodayController extends Controller {
         today_timestamp,
         today_timestamp
       ]);
+
       let data;
       if (terms.length > 0) {
         // 在学期内
@@ -52,7 +56,9 @@ class InfoTodayController extends Controller {
           }
         };
       }
+
       const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 3600); // 1 小时过期
+
       if (cache_update === 'OK') {
         // 更新成功
         ctx.body = {

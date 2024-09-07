@@ -116,6 +116,13 @@ class ExamListController extends Controller {
     }
   }
 
+  /**
+   * 信息处理
+   * @param {string} student_id 学号
+   * @param {string} term 学期
+   * @param {object} data 数据
+   * @return {object} 返回 parse_data
+   */
   async processData(student_id, term, data) {
     const { ctx } = this;
     // 先删除数据库中原有的数据

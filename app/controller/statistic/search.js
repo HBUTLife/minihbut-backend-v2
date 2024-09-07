@@ -14,10 +14,13 @@ class StatisticSearchController extends Controller {
    */
   async index() {
     const { ctx } = this;
+
     // 参数校验
     ctx.validate(createRule, ctx.query);
+
     // 获取关键词
     const keyword = ctx.query.keyword;
+
     // 字符必须大于等于2
     if (keyword.length < 2) {
       ctx.body = {
@@ -26,9 +29,12 @@ class StatisticSearchController extends Controller {
       };
       return;
     }
+
     const cache_key = `statistic_search_${cryptojs.MD5(keyword).toString()}`;
+
     // Redis 获取给分统计搜索缓存
     const cache = await ctx.app.redis.get(cache_key);
+
     if (cache) {
       // 存在缓存
       ctx.body = {
@@ -42,12 +48,14 @@ class StatisticSearchController extends Controller {
         `%${keyword}%`,
         `%${keyword}%`
       ]);
+
       if (result.length > 0) {
         // 有结果
         // 遍历查重并格式化
         const search_list = [];
         for (const item of result) {
           const count = search_list.filter(ele => ele.name === item.name && ele.teacher === item.teacher);
+
           if (count.length === 0 && item.teacher) {
             // 不存在则添加
             search_list.push({
@@ -56,8 +64,10 @@ class StatisticSearchController extends Controller {
             });
           }
         }
+
         // 存入 Redis
         const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(search_list), 'EX', 3600); // 1 小时过期
+
         if (cache_update === 'OK') {
           // 更新成功
           ctx.body = {

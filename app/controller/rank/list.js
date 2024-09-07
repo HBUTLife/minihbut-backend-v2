@@ -17,14 +17,19 @@ class RankListController extends Controller {
     const { ctx } = this;
     // 参数校验
     ctx.validate(createRule, ctx.query);
+
     // 获取学期
     let term = ctx.query.term;
+
     // 初始化个人信息
     const user = ctx.user_info;
+
     // Redis Key
     const cache_key = `rank_${user.student_id}_${term}`;
+
     // Redis 获取排名信息
     const cache = await ctx.app.redis.get(cache_key);
+
     if (cache) {
       // 存在缓存
       ctx.body = {
@@ -39,6 +44,7 @@ class RankListController extends Controller {
           student_id: user.student_id
         }
       });
+
       // 判断全学期
       if (term === '001') {
         term = '';
@@ -59,9 +65,11 @@ class RankListController extends Controller {
         if (result.status === 200) {
           // 获取成功
           const data = await this.processData(user.student_id, term, result.data);
+
           if (data.status === 1) {
             // 存入 Redis
             const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data.data), 'EX', 300); // 5 分钟过期
+
             if (cache_update === 'OK') {
               // 更新成功
               ctx.body = {
@@ -90,6 +98,7 @@ class RankListController extends Controller {
         } else {
           // 登录过期，重新登录获取
           const reauth = await ctx.service.auth.idaas(user.student_id);
+
           if (reauth.code === 200) {
             // 重新授权成功重新执行
             await this.index();
@@ -120,6 +129,7 @@ class RankListController extends Controller {
         if (data.length > 0) {
           // 数据库内有数据，更新 Redis
           const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data[0]), 'EX', 300); // 5 分钟过期
+
           if (cache_update === 'OK') {
             // 更新成功
             ctx.body = {
@@ -155,21 +165,27 @@ class RankListController extends Controller {
    */
   async processData(student_id, term, data) {
     const { ctx } = this;
+
     // 判断全学期
     if (term === '') {
       term = '001';
     }
+
     // 使用 Cheerio 加载 HTML 字符串
     const $ = cheerio.load(data.toString());
+
     // 选择所有 <td> 标签
     const tdElements = $('td');
+
     // 创建一个数组来存储提取的内容
     const tdContents = [];
+
     // 循环遍历所有<td>标签，并将其内容添加到数组中
     tdElements.each((index, element) => {
       const content = $(element).text().trim();
       tdContents.push(content);
     });
+
     // 格式化数据
     const parse_data = {
       student_id,
@@ -184,6 +200,7 @@ class RankListController extends Controller {
       score_class: tdContents[16],
       last_update: dayjs().unix()
     };
+
     // 检测是否存在数据
     const count = await ctx.app.mysql.count('rank', {
       student_id,
@@ -209,6 +226,7 @@ class RankListController extends Controller {
       // 更新失败
       return { status: 2 };
     }
+
     // 数据库内无数据，插入数据
     const hit = await ctx.app.mysql.insert('rank', parse_data);
 
@@ -219,6 +237,7 @@ class RankListController extends Controller {
         data: parse_data
       };
     }
+
     // 插入失败
     return { status: 3 };
   }

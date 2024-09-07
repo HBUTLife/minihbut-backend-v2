@@ -15,14 +15,19 @@ class TimetablePersonIcs extends Controller {
    */
   async index() {
     const { ctx } = this;
+
     // 参数校验
     ctx.validate(createRule, ctx.query);
+
     // 获取 Token
     const token = ctx.query.token;
+
     // Redis Key
     const cache_key = `timetable_person_ics_${token}`;
+
     // Redis 获取 ICS 内容
     const cache = await ctx.app.redis.get(cache_key);
+
     if (cache) {
       // 存在缓存
       ctx.set('Content-Type', 'text/calendar');
@@ -31,6 +36,7 @@ class TimetablePersonIcs extends Controller {
     } else {
       // 不存在缓存，检测 Token 是否存在
       const info = await ctx.app.mysql.select('timetable_export', { where: { token } });
+
       if (info.length > 0) {
         // Token 存在，从数据库获取课表
         const timetable = await ctx.app.mysql.select('timetable', {
@@ -39,14 +45,15 @@ class TimetablePersonIcs extends Controller {
             student_id: info[0].student_id
           }
         });
+
         // 数据库中获取学期信息
         const term = await ctx.app.mysql.select('term', {
           where: {
             name: info[0].term
           }
         });
-        // 获取学期基础信息
-        // 创建 ICS 事件数据
+
+        // 获取学期基础信息，创建 ICS 事件数据
         const data = [];
         for (const item of timetable) {
           const weeks = item.week.split(',');
@@ -63,6 +70,7 @@ class TimetablePersonIcs extends Controller {
             });
           }
         }
+
         // 生成 ICS 文件内容
         const { error, value } = ics.createEvents(data);
         if (error) {
@@ -73,8 +81,10 @@ class TimetablePersonIcs extends Controller {
           };
           return;
         }
+
         // 存入 Redis
         const cache_update = await ctx.app.redis.set(cache_key, value, 'EX', 3600); // 1 小时过期
+
         if (cache_update === 'OK') {
           // 存入成功
           ctx.set('Content-Type', 'text/calendar');
@@ -104,6 +114,7 @@ class TimetablePersonIcs extends Controller {
    */
   getStartTime(section) {
     const start_section = parseInt(section.split(',')[0]); // 开始节次
+
     // eslint-disable-next-line default-case
     switch (start_section) {
       case 1:
@@ -140,6 +151,7 @@ class TimetablePersonIcs extends Controller {
     const sec_arr = section.split(',');
     const sec_count = sec_arr.length; // 几节课
     const total_minutes = 45 * sec_count + 5 * (sec_count - 1);
+
     return {
       hours: Math.floor(total_minutes / 60),
       minutes: total_minutes % 60

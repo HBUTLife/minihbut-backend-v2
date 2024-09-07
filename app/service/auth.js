@@ -58,27 +58,27 @@ class AuthService extends Service {
               code: 200,
               message: '重新授权成功重新执行'
             };
-          } else {
-            // 更新失败
-            return {
-              code: 500,
-              message: '数据库更新失败'
-            };
           }
-        } else {
-          // 教务系统登录过程中遇到错误
+
+          // 更新失败
           return {
             code: 500,
-            message: '教务系统错误'
+            message: '数据库更新失败'
           };
         }
-      } else {
-        // Idaas 密码错误或其他错误
+
+        // 教务系统登录过程中遇到错误
         return {
-          code: 401,
-          message: '密码已被更改'
+          code: 500,
+          message: '教务系统错误'
         };
       }
+
+      // Idaas 密码错误或其他错误
+      return {
+        code: 401,
+        message: '密码已被更改'
+      };
     } catch (err) {
       // Idaas 认证请求失败
       return {
@@ -90,10 +90,10 @@ class AuthService extends Service {
 
   /**
    * 尝试登录并返回登录过程中所有 Cookie
-   * @param {string} first_url
-   * @param {object} first_cookies
-   * @param {*} ctx
-   * @returns
+   * @param {string} first_url 第一次请求 URL
+   * @param {object} first_cookies 第一次请求 Cookies
+   * @param {*} ctx ctx
+   * @return {*} 返回 Cookies 或者 false
    */
   async tryLogin(first_url, first_cookies, ctx) {
     let cookies = [...first_cookies];
@@ -113,7 +113,7 @@ class AuthService extends Service {
           cookies = cookies.concat(result.headers['set-cookie'].map(cookie => cookie.split(';')[0]));
         }
         if (result.status >= 300 && result.status < 400) {
-          const location = result.headers['location'];
+          const location = result.headers.location;
           if (location) {
             await tryRequest(location); // 跳转并等待完成
           }

@@ -13,14 +13,19 @@ class TimetablePersonUpdateController extends Controller {
    */
   async index() {
     const { ctx } = this;
+
     // 参数校验
     ctx.validate(createRule, ctx.query);
+
     // 获取学期
     const term = ctx.query.term;
+
     // 初始化个人信息
     const user = ctx.user_info;
+
     // 请求更新课表服务
     const result = await ctx.service.timetable.update(user.student_id, term);
+
     if (result.status === 1) {
       // 更新成功
       ctx.body = {
@@ -38,6 +43,7 @@ class TimetablePersonUpdateController extends Controller {
     } else if (result.status === 3) {
       // 登录过期，重新登录获取
       const reauth = await ctx.service.auth.idaas(user.student_id);
+
       if (reauth.code === 200) {
         // 重新授权成功重新执行
         await this.index();
