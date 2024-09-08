@@ -77,9 +77,10 @@ module.exports = () => {
     '/info/swiper/click',
     '/info/urgent',
     '/info/weather',
-    '/info/document',
+    '/info/document', // 即将弃用
     '/info/share',
-    '/info/static'
+    '/info/static',
+    '/info/miniprogram'
   ];
 
   // 上传文件配置
