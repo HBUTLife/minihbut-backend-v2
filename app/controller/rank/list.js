@@ -108,7 +108,10 @@ class RankListController extends Controller {
           }
         }
       } catch (err) {
-        // 教务系统无法访问，展示数据库内数据并存入 Redis
+        // 教务系统无法访问
+        console.log(err);
+
+        // 展示数据库内数据并存入 Redis
         let data;
         if (term !== '') {
           data = await ctx.app.mysql.select('rank', {

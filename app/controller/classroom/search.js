@@ -99,6 +99,8 @@ class ClassroomSearchController extends Controller {
         }
       } catch (err) {
         // 教务系统无法访问，返回错误
+        console.log(err);
+
         ctx.body = {
           code: 500,
           message: '教务系统无法访问'

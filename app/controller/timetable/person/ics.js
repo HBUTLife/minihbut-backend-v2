@@ -75,6 +75,7 @@ class TimetablePersonIcs extends Controller {
         const { error, value } = ics.createEvents(data);
         if (error) {
           console.log(error);
+
           ctx.body = {
             code: 500,
             message: 'ICS文件生成失败'

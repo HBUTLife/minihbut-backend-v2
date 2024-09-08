@@ -21,7 +21,6 @@ class UpdateLesson extends Subscription {
     const auth = await ctx.service.auth.idaas(pass[0].student_id);
     if (auth.code !== 200) {
       // 授权失败则停止更新
-      console.log('登录状态已过期');
       return;
     }
 

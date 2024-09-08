@@ -52,6 +52,7 @@ class TimetableService extends Service {
     } catch (err) {
       // 教务系统无法访问
       console.log(err);
+
       return { status: 4 };
     }
   }

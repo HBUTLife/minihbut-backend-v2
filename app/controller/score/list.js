@@ -102,6 +102,7 @@ class ScoreListController extends Controller {
       } catch (err) {
         // 教务系统无法访问，展示数据库内数据
         console.log(err);
+
         let data;
         if (term === '001') {
           // 全学期

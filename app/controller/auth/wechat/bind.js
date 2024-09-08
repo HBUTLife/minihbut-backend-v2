@@ -73,6 +73,8 @@ class AuthWechatBindController extends Controller {
       }
     } catch (err) {
       // 服务器连接微信接口失败
+      console.log(err);
+
       ctx.body = {
         code: 500,
         message: '微信接口请求失败'

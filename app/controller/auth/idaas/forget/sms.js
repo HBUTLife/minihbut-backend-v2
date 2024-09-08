@@ -58,6 +58,8 @@ class AuthIdaasForgetSmsController extends Controller {
       }
     } catch (err) {
       // 无法访问
+      console.log(err);
+
       ctx.body = {
         code: 500,
         message: '统一身份认证短信接口请求失败'

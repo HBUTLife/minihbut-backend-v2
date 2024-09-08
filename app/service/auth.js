@@ -81,6 +81,8 @@ class AuthService extends Service {
       };
     } catch (err) {
       // Idaas 认证请求失败
+      console.log(err);
+
       return {
         code: 500,
         message: '统一身份认证系统接口请求失败'
@@ -120,6 +122,7 @@ class AuthService extends Service {
         }
       } catch (err) {
         console.log(err); // 输出错误信息
+
         success = false; // 标记为失败
         return; // 结束当前请求链
       }

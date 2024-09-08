@@ -31,8 +31,6 @@ class AuthIdaasForgetCodeController extends Controller {
         dataType: 'json'
       });
 
-      console.log(result);
-
       if (result.status === 200) {
         // 成功
         ctx.body = {
@@ -52,6 +50,8 @@ class AuthIdaasForgetCodeController extends Controller {
       }
     } catch (err) {
       // 无法访问
+      console.log(err);
+
       ctx.body = {
         code: 500,
         message: '统一身份认证短信验证接口请求失败'

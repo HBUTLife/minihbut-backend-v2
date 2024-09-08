@@ -67,6 +67,8 @@ class AuthIdaasForgetResetController extends Controller {
       }
     } catch (err) {
       // 无法访问接口
+      console.log(err);
+
       ctx.body = {
         code: 500,
         message: '统一身份认证重置密码接口请求失败'

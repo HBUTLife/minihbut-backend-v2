@@ -82,7 +82,10 @@ class AuthIdaasLoginController extends Controller {
         };
       }
     } catch (err) {
-      // 认证过程中出现问题，根据数据库内信息比对登录
+      // 认证过程中出现问题
+      console.log(err);
+
+      // 根据数据库内信息比对登录
       await this.databaseLogin(username, password);
     }
   }
@@ -172,6 +175,7 @@ class AuthIdaasLoginController extends Controller {
         }
       } catch (err) {
         console.log(err); // 输出错误信息
+
         success = false; // 标记为失败
         return; // 结束当前请求链
       }
