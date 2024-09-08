@@ -101,6 +101,7 @@ class ScoreListController extends Controller {
         }
       } catch (err) {
         // 教务系统无法访问，展示数据库内数据
+        console.log(err);
         let data;
         if (term === '001') {
           // 全学期
@@ -190,16 +191,26 @@ class ScoreListController extends Controller {
         exam_type: item.ksxs,
         credit: item.xf,
         student_credit: item.hdxf.toString(),
-        score: parseInt(item.yscj),
+        score: parseInt(item.yscj ? item.yscj : item.zhcj === '不及格' ? '0' : item.zhcj),
         detail: item.cjfxms,
         term: item.xnxq,
         student_id,
         last_update
       };
 
-      // 插入成绩
-      await ctx.app.mysql.insert('score', data);
-      parse_data.push(data);
+      try {
+        // 插入成绩至数据库
+        await ctx.app.mysql.insert('score', data);
+
+        // 插入返回
+        parse_data.push(data);
+      } catch (err) {
+        // 报错
+        console.log(err);
+
+        // 跳过继续循环
+        continue;
+      }
     }
 
     return parse_data;
