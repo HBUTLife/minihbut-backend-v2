@@ -79,8 +79,7 @@ module.exports = () => {
     '/info/weather',
     '/info/document',
     '/info/share',
-    '/info/static',
-    '/info/extra' // 即将弃用
+    '/info/static'
   ];
 
   // 上传文件配置

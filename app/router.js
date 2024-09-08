@@ -32,7 +32,6 @@ module.exports = app => {
 
   router.get('/statistic/search', controller.statistic.search.index);
   router.get('/statistic/detail', controller.statistic.detail.index);
-  router.get('/timetable/class/search', controller.timetable.class.search.index); // 即将弃用
 
   router.get('/score/list', controller.score.list.index);
   router.get('/rank/list', controller.rank.list.index);
@@ -50,5 +49,4 @@ module.exports = app => {
   router.get('/info/document', controller.info.document.index);
   router.get('/info/share', controller.info.share.index);
   router.get('/info/static', controller.info.static.index);
-  router.get('/info/extra', controller.info.extra.index); // 即将弃用
 };
