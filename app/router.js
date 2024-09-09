@@ -15,8 +15,8 @@ module.exports = app => {
   router.post('/auth/wechat/unbind', controller.auth.wechat.unbind.index);
   router.get('/auth/wechat/status', controller.auth.wechat.status.index);
 
-  router.get('/user/avatar', controller.user.avatar.get.index);
-  router.post('/user/avatar/upload', controller.user.avatar.upload.index);
+  router.get('/user/info', controller.user.info.index);
+  router.post('/user/avatar', controller.user.avatar.index);
 
   router.get('/timetable/person/list', controller.timetable.person.list.index);
   router.get('/timetable/person/today', controller.timetable.person.today.index);
@@ -46,7 +46,6 @@ module.exports = app => {
 
   router.get('/info/urgent', controller.info.urgent.index);
   router.get('/info/weather', controller.info.weather.index);
-  router.get('/info/document', controller.info.document.index); // 即将弃用
   router.get('/info/share', controller.info.share.index);
   router.get('/info/static', controller.info.static.index);
   router.get('/info/miniprogram', controller.info.miniprogram.index);

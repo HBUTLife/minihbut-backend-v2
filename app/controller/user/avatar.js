@@ -5,7 +5,7 @@ const dayjs = require('dayjs');
 const Minio = require('minio');
 const crypto = require('crypto');
 
-class UserAvatarUploadController extends Controller {
+class UserAvatarController extends Controller {
   /**
    * 上传头像
    */
@@ -111,4 +111,4 @@ class UserAvatarUploadController extends Controller {
   }
 }
 
-module.exports = UserAvatarUploadController;
+module.exports = UserAvatarController;
