@@ -77,7 +77,6 @@ module.exports = () => {
     '/info/swiper/click',
     '/info/urgent',
     '/info/weather',
-    '/info/document', // 即将弃用
     '/info/share',
     '/info/static',
     '/info/miniprogram'
