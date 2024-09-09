@@ -11,9 +11,10 @@ class InfoUrgentController extends Controller {
     const { ctx } = this;
 
     // 数据库获取
-    const result = await ctx.app.mysql.query('SELECT title, content FROM urgent WHERE expire_time >= ?', [
-      dayjs().format('YYYY-MM-DD HH:mm:ss')
-    ]);
+    const result = await ctx.app.mysql.query(
+      'SELECT title, content FROM urgent WHERE expire_time >= ? ORDER BY id DESC',
+      [dayjs().format('YYYY-MM-DD HH:mm:ss')]
+    );
 
     // 无紧急通知
     if (result.length === 0) {
