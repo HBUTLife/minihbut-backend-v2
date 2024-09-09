@@ -199,7 +199,7 @@ class UpdateLesson extends Subscription {
         try {
           // 写入数据库
           await ctx.app.mysql.insert('lesson', {
-            name: item.name,
+            name: item.name.replace('（', '(').replace('）', ')'),
             location: item.timeAndPlace[i + 3].replace('【', '').replace('】', '').replace(';', ''),
             teacher: item.teacher,
             classes: item.classes.replace('...', ''),
