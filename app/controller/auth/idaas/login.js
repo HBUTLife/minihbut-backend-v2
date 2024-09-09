@@ -39,25 +39,43 @@ class AuthIdaasLoginController extends Controller {
       if (idaas.status === 200) {
         // 统一身份认证登录成功
         const idaas_cookies = idaas.headers['set-cookie'].map(cookie => cookie.split(';')[0]);
+
         // 请求登录教务系统
         const login = await this.tryLogin(ctx.app.config.idaas.base + ctx.app.config.idaas.sso, idaas_cookies);
+
         if (login.some(item => item.startsWith('uid=')) && login.some(item => item.startsWith('route='))) {
           // 登录成功
           const cookie_uid = login.find(item => item.startsWith('uid='));
           const cookie_route = login.find(item => item.startsWith('route='));
+
+          // 更新个人信息
+          const process_info = await this.processInfo(username, password, cookie_uid, cookie_route);
+
           // 获取个人信息
-          const info = await this.processInfo(username, password, cookie_uid, cookie_route);
-          if (info.status === 1) {
+          const result = await ctx.app.mysql.select('user', { where: { student_id: username } });
+          const info = {
+            id: result[0].id,
+            student_id: result[0].student_id,
+            name: result[0].name,
+            college: result[0].college,
+            class: result[0].class,
+            major: result[0].major,
+            grade: result[0].grade,
+            grade_enter: result[0].grade_enter,
+            avatar: result[0].avatar
+          };
+
+          if (process_info.status === 1 && result.length > 0) {
             // 存入/更新信息成功
             ctx.body = {
               code: 200,
               message: '登录成功',
               data: {
-                info: info.data,
-                token: this.signToken(info.data)
+                info,
+                token: this.signToken(info)
               }
             };
-          } else if (info.status === 2) {
+          } else if (process_info.status === 2) {
             // 存入/更新信息失败
             ctx.body = {
               code: 500,
@@ -111,14 +129,17 @@ class AuthIdaasLoginController extends Controller {
       ) {
         // 密码正确
         const info = {
+          id: local[0].id,
           student_id: local[0].student_id,
           name: local[0].name,
           college: local[0].college,
           class: local[0].class,
           major: local[0].major,
           grade: local[0].grade,
-          grade_enter: local[0].grade_enter
+          grade_enter: local[0].grade_enter,
+          avatar: local[0].avatar
         };
+
         ctx.body = {
           code: 202,
           message: '登录成功',
@@ -197,6 +218,7 @@ class AuthIdaasLoginController extends Controller {
   async processInfo(username, password, cookie_uid, cookie_route) {
     const { ctx } = this;
     const info_url = ctx.app.config.jwxt.base + ctx.app.config.jwxt.info;
+
     // 获取个人信息
     const info = await ctx.curl(info_url, {
       method: 'GET',
@@ -205,9 +227,11 @@ class AuthIdaasLoginController extends Controller {
       },
       dataType: 'json'
     });
+
     // 原始个人信息数据
     const raw = info.data.data.records;
     const origin_info = raw.find(element => element.xh === username);
+
     // 格式化个人信息数据
     const parse_info = {
       student_id: origin_info.xh,
@@ -222,9 +246,11 @@ class AuthIdaasLoginController extends Controller {
       jw_uid: cookie_uid.replace('uid=', ''),
       jw_route: cookie_route.replace('route=', '')
     };
+
     // 检测是否存在该用户
     const check = await ctx.app.mysql.count('user', { student_id: username });
     parse_info.update_time = dayjs().unix();
+
     if (check > 0) {
       // 存在用户则更新
       const hit = await ctx.app.mysql.update('user', parse_info, {
@@ -234,42 +260,23 @@ class AuthIdaasLoginController extends Controller {
       });
       if (hit.affectedRows === 1) {
         // 更新成功
-        delete parse_info.password;
-        delete parse_info.jw_id;
-        delete parse_info.jw_uid;
-        delete parse_info.jw_route;
-        delete parse_info.create_time;
-        delete parse_info.update_time;
-        return {
-          status: 1,
-          data: parse_info
-        };
+        return { status: 1 };
       }
       // 更新失败
-      return {
-        status: 2
-      };
+      return { status: 2 };
     }
+
     // 不存在用户则插入
     parse_info.create_time = dayjs().unix();
     const hit = await ctx.app.mysql.insert('user', parse_info);
+
     if (hit.affectedRows === 1) {
       // 插入成功
-      delete parse_info.password;
-      delete parse_info.jw_id;
-      delete parse_info.jw_uid;
-      delete parse_info.jw_route;
-      delete parse_info.create_time;
-      delete parse_info.update_time;
-      return {
-        status: 1,
-        data: parse_info
-      };
+      return { status: 1 };
     }
+
     // 插入失败
-    return {
-      status: 2
-    };
+    return { status: 2 };
   }
 
   /**
