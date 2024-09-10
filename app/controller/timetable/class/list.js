@@ -44,35 +44,46 @@ class TimetableClassListController extends Controller {
         data: JSON.parse(cache)
       };
     } else {
-      // 不存在缓存，从数据库中获取并存入 Redis
-      const result = await ctx.app.mysql.query('SELECT * FROM class WHERE name LIKE ? ORDER BY name ASC', [
-        `%${keyword}%`
-      ]);
+      // 不存在缓存
+      try {
+        // 数据库查询班级
+        const result = await ctx.app.mysql.query('SELECT * FROM class WHERE name LIKE ? ORDER BY name ASC', [
+          `%${keyword}%`
+        ]);
 
-      if (result.length > 0) {
-        // 有结果
-        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(result), 'EX', 86400); // 24 小时过期
+        if (result.length > 0) {
+          // 有结果
+          const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(result), 'EX', 86400); // 24 小时过期
 
-        if (cache_update === 'OK') {
-          // 存入成功
+          if (cache_update === 'OK') {
+            // 存入成功
+            ctx.body = {
+              code: 200,
+              message: '班级搜索成功',
+              data: result
+            };
+          } else {
+            // 存入失败
+            ctx.body = {
+              code: 500,
+              message: '服务器内部错误'
+            };
+          }
+        } else {
+          // 无结果
           ctx.body = {
             code: 200,
             message: '班级搜索成功',
-            data: result
-          };
-        } else {
-          // 存入失败
-          ctx.body = {
-            code: 500,
-            message: '班级搜索缓存更新失败'
+            data: []
           };
         }
-      } else {
-        // 无结果
+      } catch (err) {
+        // 数据库查询失败
+        ctx.logger.error(err);
+
         ctx.body = {
-          code: 200,
-          message: '班级搜索成功',
-          data: []
+          code: 500,
+          message: '服务器内部错误'
         };
       }
     }

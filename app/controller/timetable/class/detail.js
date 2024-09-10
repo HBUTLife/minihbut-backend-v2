@@ -35,35 +35,46 @@ class TimetableClassDetailController extends Controller {
         data: JSON.parse(cache)
       };
     } else {
-      // 不存在缓存，从数据库中获取并存入 Redis
-      const result = await ctx.app.mysql.query(
-        'SELECT id, name, location, teacher, week, day, section FROM lesson WHERE classes LIKE ?',
-        [`%${class_name}%`]
-      );
+      // 不存在缓存
+      try {
+        // 数据库查询班级课表
+        const result = await ctx.app.mysql.query(
+          'SELECT id, name, location, teacher, week, day, section FROM lesson WHERE classes LIKE ?',
+          [`%${class_name}%`]
+        );
 
-      if (result.length > 0) {
-        // 有结果，存入 Redis
-        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(result), 'EX', 86400); // 24 小时过期
+        if (result.length > 0) {
+          // 有结果，存入 Redis
+          const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(result), 'EX', 86400); // 24 小时过期
 
-        if (cache_update === 'OK') {
-          // 更新成功
-          ctx.body = {
-            code: 200,
-            message: '班级课表获取成功',
-            data: result
-          };
+          if (cache_update === 'OK') {
+            // 更新成功
+            ctx.body = {
+              code: 200,
+              message: '班级课表获取成功',
+              data: result
+            };
+          } else {
+            // 更新失败
+            ctx.body = {
+              code: 500,
+              message: '服务器内部错误'
+            };
+          }
         } else {
-          // 更新失败
+          // 无结果
           ctx.body = {
-            code: 500,
-            message: '班级课表缓存更新失败'
+            code: 404,
+            message: '未找到班级相关课表'
           };
         }
-      } else {
-        // 无结果
+      } catch (err) {
+        // 数据库查询失败
+        ctx.logger.error(err);
+
         ctx.body = {
-          code: 404,
-          message: '未找到班级相关课表'
+          code: 500,
+          message: '服务器内部错误'
         };
       }
     }
