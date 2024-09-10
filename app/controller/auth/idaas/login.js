@@ -75,7 +75,7 @@ class AuthIdaasLoginController extends Controller {
               // 存入/更新信息失败
               ctx.body = {
                 code: 500,
-                message: '数据库处理失败'
+                message: '服务器内部错误'
               };
             }
           } catch (err) {

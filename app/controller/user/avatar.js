@@ -76,7 +76,7 @@ class UserAvatarController extends Controller {
         // 更新失败
         ctx.body = {
           code: 500,
-          message: '头像上传失败'
+          message: '服务器内部错误'
         };
       }
     } catch (err) {

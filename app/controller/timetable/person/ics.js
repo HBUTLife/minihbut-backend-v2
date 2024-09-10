@@ -79,11 +79,12 @@ class TimetablePersonIcs extends Controller {
               // 生成 ICS 文件内容
               const { error, value } = ics.createEvents(data);
               if (error) {
+                // 文件生成失败
                 ctx.logger.error(error);
 
                 ctx.body = {
                   code: 500,
-                  message: 'ICS文件生成失败'
+                  message: '服务器内部错误'
                 };
                 return;
               }
@@ -125,7 +126,7 @@ class TimetablePersonIcs extends Controller {
           // Token 不存在
           ctx.body = {
             code: 404,
-            message: '获取ICS文件的token不存在'
+            message: '订阅链接不存在'
           };
         }
       } catch (err) {

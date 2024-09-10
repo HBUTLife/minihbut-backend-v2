@@ -100,7 +100,7 @@ class ClassroomSearchController extends Controller {
             // 更新失败
             ctx.body = {
               code: 500,
-              message: '空教室缓存更新失败'
+              message: '服务器内部错误'
             };
           }
         } else if (request.status >= 300 && request.status < 400) {

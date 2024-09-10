@@ -66,7 +66,7 @@ class AuthWechatUnbindController extends Controller {
                 // 更新失败
                 ctx.body = {
                   code: 500,
-                  message: '微信解绑失败'
+                  message: '服务器内部错误'
                 };
               }
             } catch (err) {
