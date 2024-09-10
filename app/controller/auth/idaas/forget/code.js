@@ -14,12 +14,17 @@ class AuthIdaasForgetCodeController extends Controller {
    */
   async index() {
     const { ctx } = this;
+
     // 参数校验
     ctx.validate(createRule, ctx.request.body);
+
+    // 获取参数
     const username = ctx.request.body.username;
     const code = ctx.request.body.code;
+
     try {
-      const result = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.code, {
+      // 请求统一身份认证验证码检验接口
+      const request = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.code, {
         method: 'POST',
         headers: {
           'content-type': 'application/json'
@@ -31,30 +36,36 @@ class AuthIdaasForgetCodeController extends Controller {
         dataType: 'json'
       });
 
-      if (result.status === 200) {
-        // 成功
+      if (request.status === 200) {
+        // 验证码正确
         ctx.body = {
           code: 200,
           message: '短信验证成功',
           data: {
-            username: result.data.params.username,
-            token: result.data.params.token
+            username: request.data.params.username,
+            token: request.data.params.token
           }
         };
-      } else {
-        // 失败
+      } else if (request.status === 401) {
+        // 验证码错误
         ctx.body = {
           code: 401,
           message: '验证码不正确'
         };
+      } else {
+        // 统一身份认证接口其他错误
+        ctx.body = {
+          code: 400,
+          message: request.data.errorMsg
+        };
       }
     } catch (err) {
-      // 无法访问
-      console.log(err);
+      // 统一身份认证接口请求失败
+      ctx.logger.error(err);
 
       ctx.body = {
-        code: 500,
-        message: '统一身份认证短信验证接口请求失败'
+        code: 503,
+        message: '统一身份认证接口请求失败'
       };
     }
   }

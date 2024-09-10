@@ -14,12 +14,17 @@ class AuthIdaasForgetResetController extends Controller {
    */
   async index() {
     const { ctx } = this;
+
     // 参数校验
     ctx.validate(createRule, ctx.request.body);
+
+    // 获取参数
     const token = ctx.request.body.token;
     const password = ctx.request.body.password;
+
     try {
-      const result = await ctx.curl(`${ctx.app.config.idaas.base}${ctx.app.config.idaas.reset}?token=${token}`, {
+      // 请求统一身份认证密码重置接口
+      const request = await ctx.curl(`${ctx.app.config.idaas.base}${ctx.app.config.idaas.reset}?token=${token}`, {
         method: 'POST',
         headers: {
           'content-type': 'application/json'
@@ -28,50 +33,50 @@ class AuthIdaasForgetResetController extends Controller {
         dataType: 'json'
       });
 
-      if (result.status === 200) {
+      if (request.status === 200) {
         // 修改成功
         ctx.body = {
           code: 200,
           message: '统一身份认证密码重置成功'
         };
-      } else if (result.data.details.policy === 'usedRecord') {
+      } else if (request.data.details.policy === 'usedRecord') {
         // 密码使用过问题
         ctx.body = {
           code: 400,
           message: '密码不可以与最近1个密码相同'
         };
-      } else if (result.data.details.policy === 'passwordLength') {
+      } else if (request.data.details.policy === 'passwordLength') {
         // 密码长度问题
         ctx.body = {
           code: 400,
-          message: `密码长度必须为${result.data.details.min}-${result.data.details.max}位字符`
+          message: `密码长度必须为${request.data.details.min}-${request.data.details.max}位字符`
         };
-      } else if (result.data.details.policy === 'uppercase') {
+      } else if (request.data.details.policy === 'uppercase') {
         // 密码大写字符问题
         ctx.body = {
           code: 400,
-          message: `密码必须包含${result.data.details.min}位大写英文字母`
+          message: `密码必须包含${request.data.details.min}位大写英文字母`
         };
-      } else if (result.data.details.policy === 'email') {
+      } else if (request.data.details.policy === 'email') {
         // 邮箱前缀问题
         ctx.body = {
           code: 400,
           message: '密码不允许包含主邮箱前缀内容'
         };
       } else {
-        // 其他错误
+        // 统一身份认证接口其他错误
         ctx.body = {
           code: 400,
-          message: result.data.errorMsg
+          message: request.data.errorMsg
         };
       }
     } catch (err) {
-      // 无法访问接口
-      console.log(err);
+      // 统一身份认证接口请求失败
+      ctx.logger.error(err);
 
       ctx.body = {
-        code: 500,
-        message: '统一身份认证重置密码接口请求失败'
+        code: 503,
+        message: '统一身份认证接口请求失败'
       };
     }
   }

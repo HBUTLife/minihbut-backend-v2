@@ -20,12 +20,13 @@ class AuthIdaasLoginController extends Controller {
     // 参数校验
     ctx.validate(createRule, ctx.request.body);
 
+    // 获取参数
     const username = ctx.request.body.username;
     const password = ctx.request.body.password;
 
     try {
       // 请求统一身份认证接口获取 access_token, refresh_token, locale
-      const idaas = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.login, {
+      const request = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.login, {
         method: 'POST',
         headers: {
           'content-type': 'application/json'
@@ -36,12 +37,12 @@ class AuthIdaasLoginController extends Controller {
         }
       });
 
-      if (idaas.status === 200) {
+      if (request.status === 200) {
         // 统一身份认证登录成功
-        const idaas_cookies = idaas.headers['set-cookie'].map(cookie => cookie.split(';')[0]);
+        const idaas_cookies = request.headers['set-cookie'].map(cookie => cookie.split(';')[0]);
 
         // 请求登录教务系统
-        const login = await this.tryLogin(ctx.app.config.idaas.base + ctx.app.config.idaas.sso, idaas_cookies);
+        const login = await this.tryLogin(ctx.app.config.idaas.base + ctx.app.config.idaas.sso, idaas_cookies, ctx);
 
         if (login.some(item => item.startsWith('uid=')) && login.some(item => item.startsWith('route='))) {
           // 登录成功
@@ -49,44 +50,44 @@ class AuthIdaasLoginController extends Controller {
           const cookie_route = login.find(item => item.startsWith('route='));
 
           // 更新个人信息
-          const process_info = await this.processInfo(username, password, cookie_uid, cookie_route);
+          const process_info = await this.processInfo(username, password, cookie_uid, cookie_route, ctx);
 
-          // 获取个人信息
-          const result = await ctx.app.mysql.select('user', { where: { student_id: username } });
-          const info = {
-            id: result[0].id,
-            student_id: result[0].student_id,
-            name: result[0].name,
-            college: result[0].college,
-            class: result[0].class,
-            major: result[0].major,
-            grade: result[0].grade,
-            grade_enter: result[0].grade_enter,
-            avatar: result[0].avatar
-          };
+          try {
+            // 获取个人信息
+            const result = await ctx.app.mysql.select('user', { where: { student_id: username } });
+            const info = ctx.service.auth.parseUserInfo(result[0]);
 
-          if (process_info.status === 1 && result.length > 0) {
-            // 存入/更新信息成功
-            ctx.body = {
-              code: 200,
-              message: '登录成功',
-              data: {
-                info,
-                token: this.signToken(info)
-              }
-            };
-          } else if (process_info.status === 2) {
-            // 存入/更新信息失败
+            if (process_info.status === 1 && result.length > 0) {
+              // 存入/更新信息成功
+              ctx.body = {
+                code: 200,
+                message: '登录成功',
+                data: {
+                  info,
+                  token: ctx.service.auth.signToken(info)
+                }
+              };
+            } else if (process_info.status === 2) {
+              // 存入/更新信息失败
+              ctx.body = {
+                code: 500,
+                message: '数据库处理失败'
+              };
+            }
+          } catch (err) {
+            // 数据库查询失败
+            ctx.logger.error(err);
+
             ctx.body = {
               code: 500,
-              message: '数据库处理失败'
+              message: '服务器内部错误'
             };
           }
         } else {
           // 登录过程中遇到错误，根据数据库内信息比对登录
-          await this.databaseLogin(username, password);
+          await this.databaseLogin(username, password, ctx);
         }
-      } else if (idaas.status === 401) {
+      } else if (request.status === 401) {
         // 统一身份认证密码错误
         ctx.body = {
           code: 401,
@@ -95,16 +96,16 @@ class AuthIdaasLoginController extends Controller {
       } else {
         // 统一身份认证其他错误
         ctx.body = {
-          code: idaas.res.statusCode,
-          message: idaas.res.statusMessage
+          code: 400,
+          message: request.res.statusMessage
         };
       }
     } catch (err) {
       // 认证过程中出现问题
-      console.log(err);
+      ctx.logger.error(err);
 
       // 根据数据库内信息比对登录
-      await this.databaseLogin(username, password);
+      await this.databaseLogin(username, password, ctx);
     }
   }
 
@@ -112,54 +113,54 @@ class AuthIdaasLoginController extends Controller {
    * 使用数据库信息登录
    * @param {string} username 用户名
    * @param {string} password 密码
+   * @param {*} ctx ctx
    */
-  async databaseLogin(username, password) {
-    const { ctx } = this;
-    const local = await ctx.app.mysql.select('user', {
-      where: {
-        student_id: username
-      }
-    });
+  async databaseLogin(username, password, ctx) {
+    try {
+      const query = await ctx.app.mysql.select('user', {
+        where: {
+          student_id: username
+        }
+      });
 
-    if (local.length > 0) {
-      // 拥有该用户，进行比对
-      if (
-        password ===
-        tripledes.decrypt(local[0].password, this.ctx.app.config.encryption.secret).toString(cryptojs.enc.Utf8)
-      ) {
-        // 密码正确
-        const info = {
-          id: local[0].id,
-          student_id: local[0].student_id,
-          name: local[0].name,
-          college: local[0].college,
-          class: local[0].class,
-          major: local[0].major,
-          grade: local[0].grade,
-          grade_enter: local[0].grade_enter,
-          avatar: local[0].avatar
-        };
+      if (query.length > 0) {
+        // 拥有该用户，进行比对
+        if (
+          password ===
+          tripledes.decrypt(query[0].password, this.ctx.app.config.encryption.secret).toString(cryptojs.enc.Utf8)
+        ) {
+          // 密码正确
+          const info = ctx.service.parseUserInfo(query[0]);
 
-        ctx.body = {
-          code: 202,
-          message: '登录成功',
-          data: {
-            info,
-            token: this.signToken(info)
-          }
-        };
+          ctx.body = {
+            code: 202,
+            message: '登录成功',
+            data: {
+              info,
+              token: ctx.service.auth.signToken(info)
+            }
+          };
+        } else {
+          // 密码错误
+          ctx.body = {
+            code: 401,
+            message: '密码错误'
+          };
+        }
       } else {
-        // 密码错误
+        // 未注册
         ctx.body = {
-          code: 401,
-          message: '密码错误'
+          code: 500,
+          message: '教务系统无法访问'
         };
       }
-    } else {
-      // 未注册
+    } catch (err) {
+      // 数据库查询失败
+      ctx.logger.error(err);
+
       ctx.body = {
         code: 500,
-        message: '教务系统无法访问'
+        message: '服务器内部错误'
       };
     }
   }
@@ -168,34 +169,34 @@ class AuthIdaasLoginController extends Controller {
    * 尝试登录并返回登录过程中所有 Cookie
    * @param {string} first_url 第一次请求 URL
    * @param {object} first_cookies 第一次请求 Cookies
+   * @param {*} ctx ctx
    * @return {*} 返回 Cookies 或 false
    */
-  async tryLogin(first_url, first_cookies) {
-    const { ctx } = this;
+  async tryLogin(first_url, first_cookies, ctx) {
     let cookies = [...first_cookies];
     let success = true; // 标记请求是否成功
 
     const tryRequest = async url => {
       try {
-        const result = await ctx.curl(url, {
+        const request = await ctx.curl(url, {
           method: 'GET',
           headers: {
             cookie: cookies.join('; ')
           }
         });
 
-        if (result.headers['set-cookie']) {
+        if (request.headers['set-cookie']) {
           // 收集新的 Cookies
-          cookies = cookies.concat(result.headers['set-cookie'].map(cookie => cookie.split(';')[0]));
+          cookies = cookies.concat(request.headers['set-cookie'].map(cookie => cookie.split(';')[0]));
         }
-        if (result.status >= 300 && result.status < 400) {
-          const location = result.headers.location;
+        if (request.status >= 300 && request.status < 400) {
+          const location = request.headers.location;
           if (location) {
             await tryRequest(location); // 跳转并等待完成
           }
         }
       } catch (err) {
-        console.log(err); // 输出错误信息
+        ctx.logger.error(err); // 输出错误信息
 
         success = false; // 标记为失败
         return; // 结束当前请求链
@@ -212,15 +213,15 @@ class AuthIdaasLoginController extends Controller {
    * @param {string} username 用户名
    * @param {string} password 密码
    * @param {string} cookie_uid Cookie UID
-   * @param {string} cookie_route Cookie Route
+   * @param {string} cookie_route Cookie Route\
+   * @param {*} ctx ctx
    * @return {object} 返回 status, data
    */
-  async processInfo(username, password, cookie_uid, cookie_route) {
-    const { ctx } = this;
+  async processInfo(username, password, cookie_uid, cookie_route, ctx) {
     const info_url = ctx.app.config.jwxt.base + ctx.app.config.jwxt.info;
 
     // 获取个人信息
-    const info = await ctx.curl(info_url, {
+    const request = await ctx.curl(info_url, {
       method: 'GET',
       headers: {
         cookie: `${cookie_uid}; ${cookie_route}`
@@ -229,7 +230,7 @@ class AuthIdaasLoginController extends Controller {
     });
 
     // 原始个人信息数据
-    const raw = info.data.data.records;
+    const raw = request.data.data.records;
     const origin_info = raw.find(element => element.xh === username);
 
     // 格式化个人信息数据
@@ -247,46 +248,68 @@ class AuthIdaasLoginController extends Controller {
       jw_route: cookie_route.replace('route=', '')
     };
 
-    // 检测是否存在该用户
-    const check = await ctx.app.mysql.count('user', { student_id: username });
-    parse_info.update_time = dayjs().unix();
+    try {
+      // 检测是否存在该用户
+      const query = await ctx.app.mysql.count('user', { student_id: username });
+      parse_info.update_time = dayjs().unix();
 
-    if (check > 0) {
-      // 存在用户则更新
-      const hit = await ctx.app.mysql.update('user', parse_info, {
-        where: {
-          student_id: username
+      if (query > 0) {
+        try {
+          // 存在用户则更新
+          const update = await ctx.app.mysql.update('user', parse_info, {
+            where: {
+              student_id: username
+            }
+          });
+
+          if (update.affectedRows === 1) {
+            // 更新成功
+            return { status: 1 };
+          }
+
+          // 更新失败
+          return { status: 2 };
+        } catch (err) {
+          // 数据库更新失败
+          ctx.logger.error(err);
+
+          ctx.body = {
+            code: 500,
+            message: '服务器内部错误'
+          };
         }
-      });
-      if (hit.affectedRows === 1) {
-        // 更新成功
-        return { status: 1 };
       }
-      // 更新失败
-      return { status: 2 };
+
+      // 不存在用户则插入
+      parse_info.create_time = dayjs().unix();
+      try {
+        const insert = await ctx.app.mysql.insert('user', parse_info);
+
+        if (insert.affectedRows === 1) {
+          // 插入成功
+          return { status: 1 };
+        }
+
+        // 插入失败
+        return { status: 2 };
+      } catch (err) {
+        // 数据库插入失败
+        ctx.logger.error(err);
+
+        ctx.body = {
+          code: 500,
+          message: '服务器内部错误'
+        };
+      }
+    } catch (err) {
+      // 数据库查询失败
+      ctx.logger.error(err);
+
+      ctx.body = {
+        code: 500,
+        message: '服务器内部错误'
+      };
     }
-
-    // 不存在用户则插入
-    parse_info.create_time = dayjs().unix();
-    const hit = await ctx.app.mysql.insert('user', parse_info);
-
-    if (hit.affectedRows === 1) {
-      // 插入成功
-      return { status: 1 };
-    }
-
-    // 插入失败
-    return { status: 2 };
-  }
-
-  /**
-   * 签名token
-   * @param {object} payload 载荷
-   * @return {string} token
-   */
-  signToken(payload) {
-    const { ctx } = this;
-    return ctx.app.jwt.sign(payload, ctx.app.config.jwt.secret, ctx.app.config.jwt.expiresIn);
   }
 }
 
