@@ -10,23 +10,34 @@ class InfoSwiperGetController extends Controller {
   async index() {
     const { ctx } = this;
 
-    const query = await ctx.app.mysql.query(
-      'SELECT id, title, image, type, url, app_id, is_ad FROM swiper WHERE expire_time >= ? ORDER BY id DESC',
-      [dayjs().format('YYYY-MM-DD')]
-    );
+    try {
+      // 获取轮播列表
+      const query = await ctx.app.mysql.query(
+        'SELECT id, title, image, type, url, miniprogram_id, is_ad FROM swiper WHERE expire_time >= ? ORDER BY id DESC',
+        [dayjs().format('YYYY-MM-DD')]
+      );
 
-    if (query.length > 0) {
-      // 有内容
+      if (query.length > 0) {
+        // 存在且未过期
+        ctx.body = {
+          code: 200,
+          message: '轮播获取成功',
+          data: query
+        };
+      } else {
+        // 不存在或已过期
+        ctx.body = {
+          code: 404,
+          message: '轮播列表为空'
+        };
+      }
+    } catch (err) {
+      // 数据库查询失败
+      ctx.logger.error(err);
+
       ctx.body = {
-        code: 200,
-        message: '轮播获取成功',
-        data: query
-      };
-    } else {
-      // 无内容
-      ctx.body = {
-        code: 404,
-        message: '无正在展示的轮播'
+        code: 500,
+        message: '服务器内部错误'
       };
     }
   }
