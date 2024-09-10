@@ -29,73 +29,93 @@ class TimetablePersonTodayController extends Controller {
     } else {
       // 不存在缓存，从数据库中获取并存入 Redis
       const today_timestamp = dayjs().unix();
-      const terms = await ctx.app.mysql.query('SELECT * FROM term WHERE start_timestamp <= ? AND end_timestamp >= ?', [
-        today_timestamp,
-        today_timestamp
-      ]);
+      try {
+        const query = await ctx.app.mysql.query(
+          'SELECT * FROM term WHERE start_timestamp <= ? AND end_timestamp >= ?',
+          [today_timestamp, today_timestamp]
+        );
 
-      if (terms.length > 0) {
-        // 在学期内
-        const week = Math.ceil((today_timestamp - terms[0].start_timestamp) / (7 * 24 * 3600));
-        const day_origin = new Date().getDay();
-        let day = day_origin;
-        if (day_origin === 0) {
-          day = 7;
-        }
-
-        // 获取学期和星期符合的所有课程
-        const timetable = await this.app.mysql.select('timetable', {
-          where: {
-            student_id: user.student_id,
-            day,
-            term: terms[0].name
+        if (query.length > 0) {
+          // 在学期内
+          const week = Math.ceil((today_timestamp - query[0].start_timestamp) / (7 * 24 * 3600));
+          const day_origin = new Date().getDay();
+          let day = day_origin;
+          if (day_origin === 0) {
+            day = 7;
           }
-        });
 
-        // 对周次进行处理和选取
-        const day_tables = [];
-        for (const item of timetable) {
-          const weeks = item.week.split(',');
-          if (weeks.includes(week.toString())) {
-            // 检查课程是否已经结束
-            const check = this.checkTime(item, today_timestamp);
+          try {
+            // 获取学期和星期符合的所有课程
+            const timetable = await ctx.app.mysql.select('timetable', {
+              where: {
+                student_id: user.student_id,
+                day,
+                term: query[0].name
+              }
+            });
 
-            if (!check) {
-              // 未结束
-              day_tables.push(item);
+            // 对周次进行处理和选取
+            const day_tables = [];
+            for (const item of timetable) {
+              const weeks = item.week.split(',');
+              if (weeks.includes(week.toString())) {
+                // 检查课程是否已经结束
+                const check = this.checkTime(item, today_timestamp);
+
+                if (!check) {
+                  // 未结束
+                  day_tables.push(item);
+                }
+              }
             }
+
+            // 排序
+            day_tables.sort((a, b) => {
+              const sectionA = parseInt(a.section.split(',')[0]);
+              const sectionB = parseInt(b.section.split(',')[0]);
+              return sectionA - sectionB;
+            });
+
+            // 存入Redis
+            const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(day_tables), 'EX', 300); // 5 分钟
+
+            if (cache_update === 'OK') {
+              // 存入成功
+              ctx.body = {
+                code: 200,
+                message: '今日课表获取成功',
+                data: day_tables
+              };
+            } else {
+              // 存入失败
+              ctx.body = {
+                code: 500,
+                message: '服务器内部错误'
+              };
+            }
+          } catch (err) {
+            // 数据库查询失败
+            ctx.logger.error(err);
+
+            ctx.body = {
+              code: 500,
+              message: '服务器内部错误'
+            };
           }
-        }
-
-        // 排序
-        day_tables.sort((a, b) => {
-          const sectionA = parseInt(a.section.split(',')[0]);
-          const sectionB = parseInt(b.section.split(',')[0]);
-          return sectionA - sectionB;
-        });
-
-        // 存入Redis
-        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(day_tables), 'EX', 300); // 5 分钟
-
-        if (cache_update === 'OK') {
-          // 存入成功
-          ctx.body = {
-            code: 200,
-            message: '今日课表获取成功',
-            data: day_tables
-          };
         } else {
-          // 存入失败
+          // 不在学期内
           ctx.body = {
-            code: 500,
-            message: '今日课表缓存更新失败'
+            code: 403,
+            message: '学期未开始或已结束'
           };
         }
-      } else {
-        // 不在学期内
+      } catch (err) {
+        // 数据库查询失败
+        ctx.logger.error(err);
+
         ctx.body = {
-          code: 403,
-          message: '学期未开始或已结束'
+          code: 500,
+          message: '服务器内部错误'
         };
       }
     }

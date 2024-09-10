@@ -34,75 +34,107 @@ class TimetablePersonIcs extends Controller {
       ctx.set('Content-Disposition', `attachment; filename=${token}.ics`);
       ctx.body = cache;
     } else {
-      // 不存在缓存，检测 Token 是否存在
-      const info = await ctx.app.mysql.select('timetable_export', { where: { token } });
+      // 不存在缓存
+      try {
+        // 检测 Token 是否存在
+        const query = await ctx.app.mysql.select('timetable_export', { where: { token } });
 
-      if (info.length > 0) {
-        // Token 存在，从数据库获取课表
-        const timetable = await ctx.app.mysql.select('timetable', {
-          where: {
-            term: info[0].term,
-            student_id: info[0].student_id
-          }
-        });
-
-        // 数据库中获取学期信息
-        const term = await ctx.app.mysql.select('term', {
-          where: {
-            name: info[0].term
-          }
-        });
-
-        // 获取学期基础信息，创建 ICS 事件数据
-        const data = [];
-        for (const item of timetable) {
-          const weeks = item.week.split(',');
-          for (const week of weeks) {
-            const day_plus = (week - 1) * 7 + (item.day - 1);
-            const start_time = dayjs(term[0].start_date).add(day_plus, 'day');
-            const detail_time = this.getStartTime(item.section);
-            data.push({
-              title: item.name,
-              location: item.location,
-              description: `授课老师：${item.teacher}`,
-              start: [start_time.year(), start_time.month() + 1, start_time.date(), detail_time.h, detail_time.m],
-              duration: this.getDuration(item.section)
+        if (query.length > 0) {
+          // Token 存在
+          try {
+            // 数据库查询课表
+            const query2 = await ctx.app.mysql.select('timetable', {
+              where: {
+                term: query[0].term,
+                student_id: query[0].student_id
+              }
             });
+
+            // 数据库中获取学期信息
+            try {
+              const term = await ctx.app.mysql.select('term', {
+                where: {
+                  name: query[0].term
+                }
+              });
+
+              // 获取学期基础信息，创建 ICS 事件数据
+              const data = [];
+              for (const item of query2) {
+                const weeks = item.week.split(',');
+                for (const week of weeks) {
+                  const day_plus = (week - 1) * 7 + (item.day - 1);
+                  const start_time = dayjs(term[0].start_date).add(day_plus, 'day');
+                  const detail_time = this.getStartTime(item.section);
+                  data.push({
+                    title: item.name,
+                    location: item.location,
+                    description: `授课老师：${item.teacher}`,
+                    start: [start_time.year(), start_time.month() + 1, start_time.date(), detail_time.h, detail_time.m],
+                    duration: this.getDuration(item.section)
+                  });
+                }
+              }
+
+              // 生成 ICS 文件内容
+              const { error, value } = ics.createEvents(data);
+              if (error) {
+                ctx.logger.error(error);
+
+                ctx.body = {
+                  code: 500,
+                  message: 'ICS文件生成失败'
+                };
+                return;
+              }
+
+              // 存入 Redis
+              const cache_update = await ctx.app.redis.set(cache_key, value, 'EX', 3600); // 1 小时过期
+
+              if (cache_update === 'OK') {
+                // 存入成功
+                ctx.set('Content-Type', 'text/calendar');
+                ctx.set('Content-Disposition', `attachment; filename=${token}.ics`);
+                ctx.body = value;
+              } else {
+                // 存入失败
+                ctx.body = {
+                  code: 500,
+                  message: '服务器内部错误'
+                };
+              }
+            } catch (err) {
+              // 数据库查询失败
+              ctx.logger.error(err);
+
+              ctx.body = {
+                code: 500,
+                message: '服务器内部错误'
+              };
+            }
+          } catch (err) {
+            // 数据库查询失败
+            ctx.logger.error(err);
+
+            ctx.body = {
+              code: 500,
+              message: '服务器内部错误'
+            };
           }
-        }
-
-        // 生成 ICS 文件内容
-        const { error, value } = ics.createEvents(data);
-        if (error) {
-          ctx.logger.error(error);
-
-          ctx.body = {
-            code: 500,
-            message: 'ICS文件生成失败'
-          };
-          return;
-        }
-
-        // 存入 Redis
-        const cache_update = await ctx.app.redis.set(cache_key, value, 'EX', 3600); // 1 小时过期
-
-        if (cache_update === 'OK') {
-          // 存入成功
-          ctx.set('Content-Type', 'text/calendar');
-          ctx.set('Content-Disposition', `attachment; filename=${token}.ics`);
-          ctx.body = value;
         } else {
-          // 存入失败
+          // Token 不存在
           ctx.body = {
-            code: 500,
-            message: 'ICS文件存入缓存失败'
+            code: 404,
+            message: '获取ICS文件的token不存在'
           };
         }
-      } else {
-        // Token 不存在
+      } catch (err) {
+        // 数据库查询失败
+        ctx.logger.error(err);
+
         ctx.body = {
-          code: 404,
-          message: '获取ICS文件的token不存在'
+          code: 500,
+          message: '服务器内部错误'
         };
       }
     }

@@ -43,32 +43,42 @@ class TimetablePersonAddController extends Controller {
       last_update
     };
 
-    // 写入数据库
-    const insert = await ctx.app.mysql.insert('timetable_custom', data);
+    try {
+      // 写入数据库
+      const insert = await ctx.app.mysql.insert('timetable_custom', data);
 
-    if (insert.affectedRows === 1) {
-      // 写入成功，若原有课表缓存则更新缓存
-      const cache_key = `timetable_person_${user.student_id}_${term}`;
-      const cache = await ctx.app.redis.get(cache_key);
+      if (insert.affectedRows === 1) {
+        // 写入成功，若原有课表缓存则更新缓存
+        const cache_key = `timetable_person_${user.student_id}_${term}`;
+        const cache = await ctx.app.redis.get(cache_key);
 
-      if (cache) {
-        // 存在缓存则更新
-        const origin_data = JSON.parse(cache);
-        data.self = true;
-        origin_data.push(data);
-        await ctx.app.redis.set(cache_key, JSON.stringify(origin_data), 'EX', 604800); // 7 天过期
+        if (cache) {
+          // 存在缓存则更新
+          const origin_data = JSON.parse(cache);
+          data.self = true;
+          origin_data.push(data);
+          await ctx.app.redis.set(cache_key, JSON.stringify(origin_data), 'EX', 604800); // 7 天过期
+        }
+
+        ctx.body = {
+          code: 200,
+          message: '自定义课程添加成功',
+          data
+        };
+      } else {
+        // 写入失败
+        ctx.body = {
+          code: 500,
+          message: '服务器内部错误'
+        };
       }
+    } catch (err) {
+      // 数据库插入失败
+      ctx.logger.error(err);
 
-      ctx.body = {
-        code: 200,
-        message: '自定义课程添加成功',
-        data
-      };
-    } else {
-      // 写入失败
       ctx.body = {
         code: 500,
-        message: '自定义课程写入数据库失败'
+        message: '服务器内部错误'
       };
     }
   }

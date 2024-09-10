@@ -14,27 +14,30 @@ class TimetableService extends Service {
     const { ctx } = this;
 
     // 获取教务系统用户凭证
-    const pass = await ctx.app.mysql.select('user', {
+    const query = await ctx.app.mysql.select('user', {
       where: {
         student_id
       }
     });
 
     try {
-      const timetable_base_url = ctx.app.config.jwxt.base + ctx.app.config.jwxt.timetable;
-      const timetable_url = `${timetable_base_url}?xnxq=${term}&xhid=${pass[0].jw_id}`;
-      const request = await ctx.curl(timetable_url, {
+      const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.timetable, {
         headers: {
-          cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
+          cookie: `uid=${query[0].jw_uid}; route=${query[0].jw_route}`
+        },
+        data: {
+          xnxq: term,
+          xhid: query[0].jw_id
         },
         dataType: 'json'
       });
+
       if (request.status === 200) {
         // 获取成功
         if (request.data.length > 0) {
           // 有数据，更新 MySQL 和 Redis
-          const data = await this.databaseUpdate(student_id, term, request.data); // 写入 MySQL 并获取原始课表
-          const custom = await this.cacheUpdate(student_id, term, data); // 写入 Redis 并获取自定义课表
+          const data = await this.databaseUpdate(student_id, term, request.data, ctx); // 写入 MySQL 并获取原始课表
+          const custom = await this.cacheUpdate(student_id, term, data, ctx); // 写入 Redis 并获取自定义课表
           const final_data = data.concat(custom);
 
           return {
@@ -45,14 +48,13 @@ class TimetableService extends Service {
 
         // 无数据
         return { status: 2 };
+      } else if (request.status >= 300 && request.status < 400) {
+        // uid route 已过期
+        return { status: 3 };
       }
-
-      // uid route 已过期
-      return { status: 3 };
     } catch (err) {
       // 教务系统无法访问
       ctx.logger.error(err);
-
       return { status: 4 };
     }
   }
@@ -62,10 +64,10 @@ class TimetableService extends Service {
    * @param {string} student_id 学号
    * @param {string} term 学期
    * @param {object} data 原始数据
+   * @param {*} ctx ctx
    * @return {object} 处理后数据
    */
-  async databaseUpdate(student_id, term, data) {
-    const { ctx } = this;
+  async databaseUpdate(student_id, term, data, ctx) {
     const parse_data = [];
     const last_update = dayjs().unix();
 
@@ -100,44 +102,53 @@ class TimetableService extends Service {
       }
     }
 
-    // 删除数据库内原有数据
-    await ctx.app.mysql.delete('timetable', {
-      term,
-      student_id
-    });
+    try {
+      // 删除数据库内原有数据
+      await ctx.app.mysql.delete('timetable', {
+        term,
+        student_id
+      });
 
-    // 二次遍历格式化数据并插入数据库
-    for (const item of parse_data) {
-      // 格式化课程名称
-      item.name = item.name
-        ? item.name.replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '').replaceAll('</a>', '')
-        : '';
+      // 二次遍历格式化数据并插入数据库
+      for (const item of parse_data) {
+        // 格式化课程名称
+        item.name = item.name
+          ? item.name
+              .replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '')
+              .replaceAll('</a>', '')
+          : '';
 
-      // 格式化上课地点
-      item.location = item.location
-        ? item.location
-            .replace(/<a href="javascript:void\(0\);" onclick="openCrkb\('.*?','.*?'\)">/g, '')
-            .replaceAll('</a>', '')
-        : '';
+        // 格式化上课地点
+        item.location = item.location
+          ? item.location
+              .replace(/<a href="javascript:void\(0\);" onclick="openCrkb\('.*?','.*?'\)">/g, '')
+              .replaceAll('</a>', '')
+          : '';
 
-      // 格式化教师
-      item.teacher = item.teacher
-        ? item.teacher
-            .replace(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
-            .replaceAll('</a>', '')
-        : '';
+        // 格式化教师
+        item.teacher = item.teacher
+          ? item.teacher
+              .replace(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
+              .replaceAll('</a>', '')
+          : '';
 
-      try {
-        // 插入数据
-        await ctx.app.mysql.insert('timetable', item);
-      } catch (err) {
-        // 丢出错误
-        ctx.logger.error(err);
+        try {
+          // 插入数据
+          await ctx.app.mysql.insert('timetable', item);
+        } catch (err) {
+          // 丢出错误
+          ctx.logger.error(err);
+          continue;
+        }
       }
-    }
 
-    // 返回处理完数据
-    return parse_data;
+      // 返回处理完数据
+      return parse_data;
+    } catch (err) {
+      // 数据库删除失败
+      ctx.logger.error(err);
+      return false;
+    }
   }
 
   /**
@@ -145,27 +156,32 @@ class TimetableService extends Service {
    * @param {string} student_id 学号
    * @param {string} term 学期
    * @param {object} data 处理后数据
+   * @param {*} ctx ctx
    * @return {object} 自定义课程列表
    */
-  async cacheUpdate(student_id, term, data) {
-    const { ctx } = this;
+  async cacheUpdate(student_id, term, data, ctx) {
+    try {
+      // 获取自定义课程列表
+      const query = await ctx.app.mysql.select('timetable_custom', {
+        where: {
+          term,
+          student_id
+        }
+      });
 
-    // 获取自定义课程列表
-    const custom = await ctx.app.mysql.select('timetable_custom', {
-      where: {
-        term,
-        student_id
-      }
-    });
+      // 将自定义课程加入课表列表
+      const final_data = data.concat(query);
 
-    // 将自定义课程加入课表列表
-    const final_data = data.concat(custom);
+      // 写入 Redis
+      await ctx.app.redis.set(`timetable_person_${student_id}_${term}`, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
 
-    // 写入 Redis
-    await ctx.app.redis.set(`timetable_person_${student_id}_${term}`, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
-
-    // 返回自定义课程列表
-    return custom;
+      // 返回自定义课程列表
+      return query;
+    } catch (err) {
+      // 数据库查询失败
+      ctx.logger.error(err);
+      return false;
+    }
   }
 }
 

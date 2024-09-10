@@ -37,74 +37,100 @@ class TimetablePersonListController extends Controller {
       };
     } else {
       // 不存在缓存，从数据库获取并存入 Redis
-      const local = await ctx.app.mysql.select('timetable', {
-        where: {
-          term,
-          student_id: user.student_id
-        }
-      });
-
-      if (local.length > 0) {
-        // 数据库中有数据，存入 Redis
-        const custom = await ctx.app.mysql.select('timetable_custom', {
+      try {
+        const query = await ctx.app.mysql.select('timetable', {
           where: {
             term,
             student_id: user.student_id
           }
         });
-        custom.forEach(item => {
-          item.self = true;
-        });
-        const final_data = local.concat(custom);
-        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
-        if (cache_update === 'OK') {
-          // 更新成功
-          ctx.body = {
-            code: 202,
-            message: '个人课表列表获取成功',
-            data: final_data
-          };
-        } else {
-          // 更新失败
-          ctx.body = {
-            code: 500,
-            message: '个人课表列表缓存更新失败'
-          };
-        }
-      } else {
-        // 数据库中无数据，获取课表数据
-        const timetable = await ctx.service.timetable.update(user.student_id, term);
-        if (timetable.status === 1) {
-          // 获取成功
-          ctx.body = {
-            code: 200,
-            message: '个人课表列表获取成功',
-            data: timetable.data
-          };
-        } else if (timetable.status === 2) {
-          // 获取成功，无数据
-          ctx.body = {
-            code: 200,
-            message: '个人课表列表获取成功',
-            data: []
-          };
-        } else if (timetable.status === 3) {
-          // 登录过期，重新登录获取
-          const reauth = await ctx.service.auth.idaas(user.student_id);
-          if (reauth.code === 200) {
-            // 重新授权成功重新执行
-            await this.index();
-          } else {
-            // 重新授权失败
-            ctx.body = reauth;
+
+        if (query.length > 0) {
+          // 数据库中有数据，存入 Redis
+          try {
+            const query2 = await ctx.app.mysql.select('timetable_custom', {
+              where: {
+                term,
+                student_id: user.student_id
+              }
+            });
+
+            query2.forEach(item => {
+              item.self = true;
+            });
+
+            const final_data = query.concat(query2);
+
+            const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
+
+            if (cache_update === 'OK') {
+              // 更新成功
+              ctx.body = {
+                code: 202,
+                message: '个人课表列表获取成功',
+                data: final_data
+              };
+            } else {
+              // 更新失败
+              ctx.body = {
+                code: 500,
+                message: '服务器内部错误'
+              };
+            }
+          } catch (err) {
+            // 数据库查询失败
+            ctx.logger.error(err);
+
+            ctx.body = {
+              code: 500,
+              message: '服务器内部错误'
+            };
           }
-        } else if (timetable.status === 4) {
-          // 教务系统错误
-          ctx.body = {
-            code: 500,
-            message: '教务系统无法连接'
-          };
+        } else {
+          // 数据库中无数据，获取课表数据
+          const timetable = await ctx.service.timetable.update(user.student_id, term);
+
+          if (timetable.status === 1) {
+            // 获取成功
+            ctx.body = {
+              code: 200,
+              message: '个人课表列表获取成功',
+              data: timetable.data
+            };
+          } else if (timetable.status === 2) {
+            // 获取成功，无数据
+            ctx.body = {
+              code: 200,
+              message: '个人课表列表获取成功',
+              data: []
+            };
+          } else if (timetable.status === 3) {
+            // 登录过期，重新登录获取
+            const reauth = await ctx.service.auth.idaas(user.student_id);
+
+            if (reauth.code === 200) {
+              // 重新授权成功重新执行
+              await this.index();
+            } else {
+              // 重新授权失败
+              ctx.body = reauth;
+            }
+          } else if (timetable.status === 4) {
+            // 教务系统错误
+            ctx.body = {
+              code: 503,
+              message: '教务系统接口请求失败'
+            };
+          }
         }
+      } catch (err) {
+        // 数据库查询失败
+        ctx.logger.error(err);
+
+        ctx.body = {
+          code: 500,
+          message: '服务器内部错误'
+        };
       }
     }
   }

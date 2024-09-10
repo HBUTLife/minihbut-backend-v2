@@ -54,8 +54,8 @@ class TimetablePersonUpdateController extends Controller {
     } else if (update.status === 4) {
       // 教务系统错误
       ctx.body = {
-        code: 500,
-        message: '教务系统出错无法更新课表'
+        code: 503,
+        message: '教务系统接口请求失败'
       };
     }
   }

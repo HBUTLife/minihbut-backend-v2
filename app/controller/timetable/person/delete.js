@@ -25,39 +25,64 @@ class TimetablePersonDeleteController extends Controller {
     // 初始化个人信息
     const user = ctx.user_info;
 
-    // 删除操作
-    const del = await ctx.app.mysql.delete('timetable_custom', {
-      id,
-      term,
-      student_id: user.student_id
-    });
+    try {
+      // 删除操作
+      const del = await ctx.app.mysql.delete('timetable_custom', {
+        id,
+        term,
+        student_id: user.student_id
+      });
 
-    if (del.affectedRows === 1) {
-      // 删除成功，若原有课表缓存则更新缓存
-      const cache_key = `timetable_person_${user.student_id}_${term}`;
-      const cache = await ctx.app.redis.get(cache_key);
+      if (del.affectedRows === 1) {
+        // 删除成功，若原有课表缓存则更新缓存
+        const cache_key = `timetable_person_${user.student_id}_${term}`;
+        const cache = await ctx.app.redis.get(cache_key);
 
-      if (cache) {
-        // 存在缓存则更新
-        const origin_data = JSON.parse(cache);
-        const final_data = origin_data.filter(item => item.id !== id);
-        await ctx.app.redis.set(cache_key, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
-      }
+        if (cache) {
+          // 存在缓存则更新
+          const origin_data = JSON.parse(cache);
+          const final_data = origin_data.filter(item => item.id !== id);
+          const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
 
-      ctx.body = {
-        code: 200,
-        message: '自定义课程删除成功',
-        data: {
-          id,
-          term,
-          student_id: user.student_id
+          if (cache_update === 'OK') {
+            // 缓存更新成功
+            ctx.body = {
+              code: 200,
+              message: '自定义课程删除成功',
+              data: {
+                id,
+                term,
+                student_id: user.student_id
+              }
+            };
+          } else {
+            // 缓存更新失败
+            ctx.body = {
+              code: 500,
+              message: '服务器内部错误'
+            };
+          }
         }
-      };
-    } else {
-      // 不存在或删除失败
+      } else if (del.affectedRows === 0) {
+        // 不存在
+        ctx.body = {
+          code: 404,
+          message: '自定义课程不存在'
+        };
+      } else {
+        // 删除失败
+        ctx.body = {
+          code: 500,
+          message: '服务器内部错误'
+        };
+      }
+    } catch (err) {
+      // 数据库删除失败
+      ctx.logger.error(err);
+
       ctx.body = {
         code: 500,
-        message: '自定义课程不存在或删除失败'
+        message: '服务器内部错误'
       };
     }
   }
