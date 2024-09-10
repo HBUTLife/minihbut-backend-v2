@@ -46,21 +46,25 @@ class ScoreListController extends Controller {
 
       try {
         // 成绩获取地址
-        const score_base_url = ctx.app.config.jwxt.base + ctx.app.config.jwxt.score;
-        const score_url = `${score_base_url}?page.size=300&page.pn=1&startXnxq=${term}&endXnxq=${term}`;
-        const result = await ctx.curl(score_url, {
+        const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.score, {
           method: 'GET',
           headers: {
             cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
           },
+          data: {
+            'page.size': '300',
+            'page.pn': '1',
+            startXnxq: term,
+            endXnxq: term
+          },
           dataType: 'json'
         });
 
-        if (result.status === 200) {
+        if (request.status === 200) {
           // 获取成功
-          if (result.data.total > 0) {
+          if (request.data.total > 0) {
             // 有数据
-            const data = await this.processData(user.student_id, term, result.data.results);
+            const data = await this.processData(user.student_id, term, request.data.results);
 
             // 写入 Redis
             const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 300); // 5 分钟过期
@@ -76,7 +80,7 @@ class ScoreListController extends Controller {
               // 更新失败
               ctx.body = {
                 code: 500,
-                message: '成绩列表缓存更新失败'
+                message: '服务器内部错误'
               };
             }
           } else {
@@ -87,7 +91,7 @@ class ScoreListController extends Controller {
               data: []
             };
           }
-        } else {
+        } else if (request.status >= 300 && request.status < 400) {
           // 登录过期，重新登录获取
           const reauth = await ctx.service.auth.idaas(user.student_id);
 
@@ -98,53 +102,59 @@ class ScoreListController extends Controller {
             // 重新授权失败
             ctx.body = reauth;
           }
+        } else {
+          // 教务系统发生其他错误
+          ctx.body = {
+            code: 400,
+            message: request.statusMessage
+          };
         }
       } catch (err) {
         // 教务系统无法访问，展示数据库内数据
-        console.log(err);
+        ctx.logger.error(err);
 
-        let data;
-        if (term === '001') {
-          // 全学期
-          data = await ctx.app.mysql.select('score', {
-            where: {
-              student_id: user.student_id
-            }
-          });
-        } else {
-          // 指定学期
-          data = await ctx.app.mysql.select('score', {
-            where: {
-              term,
-              student_id: user.student_id
-            }
-          });
+        const where = { student_id: user.student_id };
+        if (term !== '001') {
+          where.term = term;
         }
 
-        if (data.length > 0) {
-          // 有数据，写入 Redis
-          const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 300); // 5 分钟过期
+        try {
+          // 数据库查询成绩列表
+          const data = await ctx.app.mysql.select('score', { where });
 
-          if (cache_update === 'OK') {
-            // 更新成功
+          if (data.length > 0) {
+            // 有数据，写入 Redis
+            const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 300); // 5 分钟过期
+
+            if (cache_update === 'OK') {
+              // 更新成功
+              ctx.body = {
+                code: 202,
+                message: '成绩列表获取成功',
+                data
+              };
+            } else {
+              // 更新失败
+              ctx.body = {
+                code: 500,
+                message: '服务器内部错误'
+              };
+            }
+          } else {
+            // 无数据
             ctx.body = {
               code: 202,
               message: '成绩列表获取成功',
-              data
-            };
-          } else {
-            // 更新失败
-            ctx.body = {
-              code: 500,
-              message: '成绩列表缓存更新失败'
+              data: []
             };
           }
-        } else {
-          // 无数据
+        } catch (err) {
+          // 数据库查询失败
+          ctx.logger.error(err);
+
           ctx.body = {
-            code: 202,
-            message: '成绩列表获取成功',
-            data: []
+            code: 500,
+            message: '服务器内部错误'
           };
         }
       }
@@ -161,60 +171,67 @@ class ScoreListController extends Controller {
   async processData(student_id, term, data) {
     const { ctx } = this;
 
-    // 判断是否为全学期，先删除数据库中原有的数据
-    if (term === '001') {
-      // 是
-      await ctx.app.mysql.delete('score', {
-        student_id
-      });
-    } else {
-      // 否
-      await ctx.app.mysql.delete('score', {
-        student_id,
-        term
-      });
+    // 判断是否为全学期
+    const where = { student_id };
+    if (term !== '001') {
+      where.term = term;
     }
 
-    // 对获取到的数据进行处理并插入数据库
-    const parse_data = [];
-    const last_update = dayjs().unix();
-    for (const item of data) {
-      const data = {
-        id: item.id.toLowerCase(),
-        name: item.kcmc
-          .replace(/\[[^\]]*\]/g, '')
-          .replace('（', '(')
-          .replace('）', ')'),
-        course_id: item.kcid,
-        teacher: item.cjlrjsxm,
-        type: item.kcxz,
-        study_type: item.xdxz,
-        exam_type: item.ksxs,
-        credit: item.xf,
-        student_credit: item.hdxf.toString(),
-        score: parseInt(item.yscj ? item.yscj : item.zhcj === '不及格' ? '0' : item.zhcj),
-        detail: item.cjfxms,
-        term: item.xnxq,
-        student_id,
-        last_update
-      };
+    try {
+      // 删除原有数据
+      await ctx.app.mysql.delete('score', where);
 
-      try {
-        // 插入成绩至数据库
-        await ctx.app.mysql.insert('score', data);
+      // 对获取到的数据进行处理并插入数据库
+      const parse_data = [];
+      const last_update = dayjs().unix();
 
-        // 插入返回
-        parse_data.push(data);
-      } catch (err) {
-        // 报错
-        console.log(err);
+      for (const item of data) {
+        const data = {
+          id: item.id.toLowerCase(),
+          name: item.kcmc
+            .replace(/\[[^\]]*\]/g, '')
+            .replace('（', '(')
+            .replace('）', ')'),
+          course_id: item.kcid,
+          teacher: item.cjlrjsxm,
+          type: item.kcxz,
+          study_type: item.xdxz,
+          exam_type: item.ksxs,
+          credit: item.xf,
+          student_credit: item.hdxf.toString(),
+          score: parseInt(item.yscj ? item.yscj : item.zhcj === '不及格' ? '0' : item.zhcj),
+          detail: item.cjfxms,
+          term: item.xnxq,
+          student_id,
+          last_update
+        };
 
-        // 跳过继续循环
-        continue;
+        try {
+          // 插入成绩至数据库
+          await ctx.app.mysql.insert('score', data);
+
+          // 插入返回
+          parse_data.push(data);
+        } catch (err) {
+          // 报错
+          ctx.logger.error(err);
+
+          // 跳过继续循环
+          continue;
+        }
       }
-    }
 
-    return parse_data;
+      return parse_data;
+    } catch (err) {
+      // 数据库删除失败
+      ctx.logger.error(err);
+
+      ctx.body = {
+        code: 500,
+        message: '服务器内部错误'
+      };
+      return false;
+    }
   }
 }
 

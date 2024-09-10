@@ -102,7 +102,7 @@ class RankListController extends Controller {
                 message: '服务器内部错误'
               };
             }
-          } else {
+          } else if (request.status >= 300 && request.status < 400) {
             // 登录过期，重新登录获取
             const reauth = await ctx.service.auth.idaas(user.student_id);
 
@@ -113,6 +113,12 @@ class RankListController extends Controller {
               // 重新授权失败
               ctx.body = reauth;
             }
+          } else {
+            // 教务系统发生其他错误
+            ctx.body = {
+              code: 400,
+              message: request.statusMessage
+            };
           }
         } catch (err) {
           // 教务系统无法访问
