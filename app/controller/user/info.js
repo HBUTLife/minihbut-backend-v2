@@ -26,43 +26,47 @@ class UserInfoController extends Controller {
         data: JSON.parse(cache)
       };
     } else {
-      // 获取用户信息
-      const result = await ctx.app.mysql.select('user', { where: { student_id: user.student_id } });
+      // 不存在缓存
+      try {
+        // 获取用户信息
+        const query = await ctx.app.mysql.select('user', { where: { student_id: user.student_id } });
 
-      // 如果没有用户信息
-      if (result.length === 0) {
-        ctx.body = {
-          code: 404,
-          message: '用户不存在'
-        };
-        return;
-      }
+        // 如果没有用户信息
+        if (query.length === 0) {
+          ctx.body = {
+            code: 404,
+            message: '用户不存在'
+          };
+          return;
+        }
 
-      // 有用户信息
-      const data = result[0];
-      delete data.password;
-      delete data.jw_id;
-      delete data.jw_uid;
-      delete data.jw_route;
-      delete data.wx_openid;
-      delete data.create_time;
-      delete data.update_time;
+        // 有用户信息
+        const info = ctx.service.auth.parseUserInfo(query[0]);
 
-      // 写入缓存
-      const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 86400); // 缓存 24 小时
+        // 写入缓存
+        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(info), 'EX', 86400); // 缓存 24 小时
 
-      if (cache_update) {
-        // 写入成功
-        ctx.body = {
-          code: 200,
-          message: '用户信息获取成功',
-          data
-        };
-      } else {
-        // 写入失败
+        if (cache_update) {
+          // 写入成功
+          ctx.body = {
+            code: 200,
+            message: '用户信息获取成功',
+            data: info
+          };
+        } else {
+          // 写入失败
+          ctx.body = {
+            code: 500,
+            message: '服务器内部错误'
+          };
+        }
+      } catch (err) {
+        // 数据库查询失败
+        ctx.logger.error(err);
+
         ctx.body = {
           code: 500,
-          message: '用户信息缓存失败'
+          message: '服务器内部错误'
         };
       }
     }
