@@ -44,8 +44,11 @@ module.exports = () => {
     // base: 'https://devapi.qweather.com', // 免费接口地址
     // key: 'c406bedc167d4c28837effa09d4efea5' // 免费 Key
     base: 'https://api.qweather.com', // 付费接口地址
+    url: {
+      now: '/v7/weather/now' // 实时天气
+    },
+    iconUrl: 'https://wx-mini-program-kjdueh.qweather.net/sites/mini-program/v1/icon',
     key: 'aa5bc22d1a894af1a230918b04ddba15', // 官方 Key
-    now: '/v7/weather/now', // 实时天气
     location: '101200113' // 默认位置 湖北省武汉市洪山区
   };
 

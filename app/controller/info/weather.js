@@ -11,10 +11,10 @@ class InfoWeatherController extends Controller {
     const { ctx } = this;
 
     // 天气位置
-    const adcode = '420111'; // 湖北省武汉市洪山区
+    const location = ctx.query.location ? ctx.query.location : ctx.app.config.qweather.location;
 
     // Redis Key
-    const cache_key = `info_weather_${adcode}`;
+    const cache_key = `info_weather_${location}`;
 
     // Redis 获取实时天气
     const cache = await ctx.app.redis.get(cache_key);
@@ -28,104 +28,55 @@ class InfoWeatherController extends Controller {
       };
     } else {
       // 不存在缓存
-      const lbs = await ctx.curl(ctx.app.config.lbs.base + ctx.app.config.lbs.weather, {
+      const request = await ctx.curl(ctx.app.config.qweather.base + ctx.app.config.qweather.url.now, {
+        method: 'GET',
         data: {
-          key: ctx.app.config.lbs.key,
-          adcode
+          key: ctx.app.config.qweather.key,
+          location
         },
         dataType: 'json'
       });
-      if (lbs.data.status === 0) {
+
+      if (request.data.code === '200') {
         // 获取成功
-        const result = lbs.data.result.realtime[0];
         const data = {
-          location: {
-            province: result.province, // 省份
-            city: result.city, // 市
-            district: result.district, // 区县
-            adcode: result.adcode // 区划编码
-          },
           info: {
-            text: result.infos.weather,
-            temperature: result.infos.temperature,
-            icon: this.getWeatherIcon(result.infos.weather)
+            text: request.data.now.text, // 文字
+            temperature: request.data.now.temp, // 温度
+            icon: `${ctx.app.config.qweather.iconUrl}/${request.data.now.icon}.png` // 图标
           },
           time: {
-            update_time: dayjs().format('YYYY-MM-DD HH:mm'), // 缓存更新时间
-            lbs_update_time: result.update_time // 接口所返回的更新时间
-          }
+            observe_time: dayjs(request.data.now.obsTime).format('YYYY-MM-DD HH:mm'), // 数据观测时间
+            update_time: dayjs(request.data.updateTime).format('YYYY-MM-DD HH:mm'), // 和风天气 API 更新时间
+            cache_time: dayjs().format('YYYY-MM-DD HH:mm') // API 缓存时间
+          },
+          refer: request.data.refer
         };
 
-        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 300); // 5 分钟过期
+        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data), 'EX', 300); // 缓存 5 分钟
 
         if (cache_update === 'OK') {
-          // 更新成功
+          // 缓存成功
           ctx.body = {
             code: 200,
             message: '实时天气获取成功',
             data
           };
         } else {
-          // 更新失败
+          // 缓存失败
           ctx.body = {
             code: 500,
-            message: '实时天气缓存更新失败'
+            message: '服务器内部错误'
           };
         }
       } else {
         // 获取失败
         ctx.body = {
-          code: 500,
+          code: 400,
           message: '实时天气获取失败'
         };
       }
     }
-  }
-
-  /**
-   * 获取图标编号
-   * @param {string} weather 天气名称
-   * @return {number} 图标ID
-   */
-  getWeatherIcon(weather) {
-    // 根据和风天气开源图标指定编号
-    const weather_map = {
-      晴天: 100,
-      多云: 101,
-      阴: 104,
-      阵雨: 300,
-      雷阵雨: 302,
-      雷阵雨伴有冰雹: 304,
-      雨夹雪: 404,
-      小雨: 305,
-      中雨: 306,
-      大雨: 307,
-      暴雨: 310,
-      大暴雨: 311,
-      特大暴雨阵雪: 312,
-      阵雪: 406,
-      小雪: 400,
-      中雪: 401,
-      大雪: 402,
-      暴雪: 403,
-      雾: 501,
-      冻雨: 313,
-      沙尘暴: 507,
-      浮尘: 504,
-      扬沙: 503,
-      强沙尘暴: 508,
-      浓雾: 509,
-      强浓雾: 510,
-      霾: 502,
-      中度霾: 511,
-      重度霾: 512,
-      严重霾: 513,
-      大雾: 514,
-      特强浓雾: 515,
-      雨: 399,
-      雪: 499
-    };
-    return weather_map[weather] || null;
   }
 }
 
