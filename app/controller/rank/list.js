@@ -122,7 +122,7 @@ class RankListController extends Controller {
           }
         } catch (err) {
           // 教务系统无法访问
-          console.log(err);
+          ctx.logger.error(err);
 
           // 展示数据库内数据并存入 Redis
           let data;

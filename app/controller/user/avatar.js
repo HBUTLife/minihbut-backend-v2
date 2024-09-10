@@ -81,7 +81,7 @@ class UserAvatarController extends Controller {
       }
     } catch (err) {
       // 错误处理
-      console.log(err);
+      ctx.logger.error(err);
 
       ctx.body = {
         code: err.status,

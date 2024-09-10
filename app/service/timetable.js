@@ -51,7 +51,7 @@ class TimetableService extends Service {
       return { status: 3 };
     } catch (err) {
       // 教务系统无法访问
-      console.log(err);
+      ctx.logger.error(err);
 
       return { status: 4 };
     }
@@ -132,7 +132,7 @@ class TimetableService extends Service {
         await ctx.app.mysql.insert('timetable', item);
       } catch (err) {
         // 丢出错误
-        console.log(err);
+        ctx.logger.error(err);
       }
     }
 

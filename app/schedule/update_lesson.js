@@ -67,7 +67,7 @@ class UpdateLesson extends Subscription {
       }
     } catch (err) {
       // 教务系统出错不进行更新
-      console.log(err);
+      ctx.logger.error(err);
     }
   }
 
@@ -211,7 +211,7 @@ class UpdateLesson extends Subscription {
           });
         } catch (err) {
           // 丢出报错
-          console.log(err);
+          ctx.logger.error(err);
         }
       }
     }

@@ -76,14 +76,14 @@ class AuthService extends Service {
         };
       }
 
-      // Idaas 密码错误或其他错误
+      // 统一身份认证密码错误或其他错误
       return {
         code: 401,
         message: '密码已被更改'
       };
     } catch (err) {
-      // Idaas 认证请求失败
-      console.log(err);
+      // 统一身份认证认证请求失败
+      ctx.logger.error(err);
 
       return {
         code: 500,
@@ -123,7 +123,7 @@ class AuthService extends Service {
           }
         }
       } catch (err) {
-        console.log(err); // 输出错误信息
+        ctx.logger.error(err); // 输出错误信息
 
         success = false; // 标记为失败
         return; // 结束当前请求链
