@@ -132,6 +132,36 @@ class AuthService extends Service {
 
     return success ? cookies : false; // 如果成功返回 Cookies，否则返回 false
   }
+
+  /**
+   * 签名token
+   * @param {object} payload 载荷
+   * @return {string} token
+   */
+  signToken(payload) {
+    const { ctx } = this;
+
+    return ctx.app.jwt.sign(payload, ctx.app.config.jwt.secret, ctx.app.config.jwt.expiresIn);
+  }
+
+  /**
+   * 格式化用户信息
+   * @param {object} raw 原始格式
+   * @return {object} 用户信息
+   */
+  parseUserInfo(raw) {
+    return {
+      id: raw.id,
+      student_id: raw.student_id,
+      name: raw.name,
+      college: raw.college,
+      class: raw.class,
+      major: raw.major,
+      grade: raw.grade,
+      grade_enter: raw.grade_enter,
+      avatar: raw.avatar
+    };
+  }
 }
 
 module.exports = AuthService;
