@@ -15,6 +15,7 @@ class RankListController extends Controller {
    */
   async index() {
     const { ctx } = this;
+
     // 参数校验
     ctx.validate(createRule, ctx.query);
 
@@ -38,123 +39,138 @@ class RankListController extends Controller {
         data: JSON.parse(cache)
       };
     } else {
-      // 不存在缓存，从教务系统获取并存入数据库中
-      const pass = await ctx.app.mysql.select('user', {
-        where: {
-          student_id: user.student_id
-        }
-      });
-
-      // 判断全学期
-      if (term === '001') {
-        term = '';
-      }
-
+      // 不存在缓存
       try {
-        const rank_base_url = ctx.app.config.jwxt.base + ctx.app.config.jwxt.rank;
-        const rank_url = `${rank_base_url}?xh=${user.student_id}&sznj=${user.grade}&xnxq=${term}`;
-        const result = await ctx.curl(rank_url, {
-          method: 'GET',
-          headers: {
-            cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
-          },
-          dataType: 'html',
-          timeout: 15000
+        // 从教务系统获取并存入数据库中
+        const query = await ctx.app.mysql.select('user', {
+          where: {
+            student_id: user.student_id
+          }
         });
 
-        if (result.status === 200) {
-          // 获取成功
-          const data = await this.processData(user.student_id, term, result.data);
+        // 判断全学期
+        if (term === '001') {
+          term = '';
+        }
 
-          if (data.status === 1) {
-            // 存入 Redis
-            const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data.data), 'EX', 300); // 5 分钟过期
+        try {
+          // 请求教务系统排名信息页面
+          const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.rank, {
+            method: 'GET',
+            headers: {
+              cookie: `uid=${query[0].jw_uid}; route=${query[0].jw_route}`
+            },
+            data: {
+              xh: user.student_id,
+              sznj: user.grade,
+              xnxq: term
+            },
+            dataType: 'html',
+            timeout: 15000 // 因加载较慢，设置 15 秒超时时间
+          });
+
+          if (request.status === 200) {
+            // 获取成功
+            const data = await this.processData(user.student_id, term, request.data);
+
+            if (data.status === 1) {
+              // 存入 Redis
+              const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data.data), 'EX', 300); // 5 分钟过期
+
+              if (cache_update === 'OK') {
+                // 更新成功
+                ctx.body = {
+                  code: 200,
+                  message: '排名信息获取成功',
+                  data: data.data
+                };
+              } else {
+                // 更新失败
+                ctx.body = {
+                  code: 500,
+                  message: '服务器内部错误'
+                };
+              }
+            } else if (data.status === 2) {
+              ctx.body = {
+                code: 500,
+                message: '服务器内部错误'
+              };
+            } else {
+              ctx.body = {
+                code: 500,
+                message: '服务器内部错误'
+              };
+            }
+          } else {
+            // 登录过期，重新登录获取
+            const reauth = await ctx.service.auth.idaas(user.student_id);
+
+            if (reauth.code === 200) {
+              // 重新授权成功重新执行
+              await this.index();
+            } else {
+              // 重新授权失败
+              ctx.body = reauth;
+            }
+          }
+        } catch (err) {
+          // 教务系统无法访问
+          console.log(err);
+
+          // 展示数据库内数据并存入 Redis
+          let data;
+          if (term !== '') {
+            data = await ctx.app.mysql.select('rank', {
+              where: {
+                student_id: user.student_id,
+                term
+              }
+            });
+          } else {
+            data = await ctx.app.mysql.select('rank', {
+              where: {
+                student_id: user.student_id,
+                term: '001'
+              }
+            });
+          }
+
+          if (data.length > 0) {
+            // 数据库内有数据，更新 Redis
+            const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data[0]), 'EX', 300); // 5 分钟过期
 
             if (cache_update === 'OK') {
               // 更新成功
               ctx.body = {
-                code: 200,
+                code: 202,
                 message: '排名信息获取成功',
-                data: data.data
+                data: data[0]
               };
             } else {
               // 更新失败
               ctx.body = {
                 code: 500,
-                message: '排名信息缓存更新失败'
+                message: '服务器内部错误'
               };
             }
-          } else if (data.status === 2) {
-            ctx.body = {
-              code: 500,
-              message: '排名信息数据库更新失败'
-            };
           } else {
-            ctx.body = {
-              code: 500,
-              message: '排名信息数据库插入失败'
-            };
-          }
-        } else {
-          // 登录过期，重新登录获取
-          const reauth = await ctx.service.auth.idaas(user.student_id);
-
-          if (reauth.code === 200) {
-            // 重新授权成功重新执行
-            await this.index();
-          } else {
-            // 重新授权失败
-            ctx.body = reauth;
-          }
-        }
-      } catch (err) {
-        // 教务系统无法访问
-        console.log(err);
-
-        // 展示数据库内数据并存入 Redis
-        let data;
-        if (term !== '') {
-          data = await ctx.app.mysql.select('rank', {
-            where: {
-              student_id: user.student_id,
-              term
-            }
-          });
-        } else {
-          data = await ctx.app.mysql.select('rank', {
-            where: {
-              student_id: user.student_id,
-              term: '001'
-            }
-          });
-        }
-
-        if (data.length > 0) {
-          // 数据库内有数据，更新 Redis
-          const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(data[0]), 'EX', 300); // 5 分钟过期
-
-          if (cache_update === 'OK') {
-            // 更新成功
+            // 数据库内无数据
             ctx.body = {
               code: 202,
               message: '排名信息获取成功',
-              data: data[0]
-            };
-          } else {
-            // 更新失败
-            ctx.body = {
-              code: 500,
-              message: '排名信息缓存更新失败'
+              data: {}
             };
           }
-        } else {
-          // 数据库内无数据
-          ctx.body = {
-            code: 202,
-            message: '排名信息获取成功',
-            data: {}
-          };
         }
+      } catch (err) {
+        // 数据库查询失败
+        ctx.logger.error(err);
+
+        ctx.body = {
+          code: 500,
+          message: '服务器内部错误'
+        };
       }
     }
   }
