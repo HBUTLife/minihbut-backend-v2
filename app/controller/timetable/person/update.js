@@ -24,23 +24,23 @@ class TimetablePersonUpdateController extends Controller {
     const user = ctx.user_info;
 
     // 请求更新课表服务
-    const result = await ctx.service.timetable.update(user.student_id, term);
+    const update = await ctx.service.timetable.update(user.student_id, term);
 
-    if (result.status === 1) {
+    if (update.status === 1) {
       // 更新成功
       ctx.body = {
         code: 200,
         message: '个人课表列表更新成功',
-        data: result.data
+        data: update.data
       };
-    } else if (result.status === 2) {
+    } else if (update.status === 2) {
       // 更新成功，无数据
       ctx.body = {
         code: 200,
         message: '个人课表列表更新成功',
         data: []
       };
-    } else if (result.status === 3) {
+    } else if (update.status === 3) {
       // 登录过期，重新登录获取
       const reauth = await ctx.service.auth.idaas(user.student_id);
 
@@ -51,7 +51,7 @@ class TimetablePersonUpdateController extends Controller {
         // 重新授权失败
         ctx.body = reauth;
       }
-    } else if (result.status === 4) {
+    } else if (update.status === 4) {
       // 教务系统错误
       ctx.body = {
         code: 500,

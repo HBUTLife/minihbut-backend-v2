@@ -38,21 +38,21 @@ class TimetableClassDetailController extends Controller {
       // 不存在缓存
       try {
         // 数据库查询班级课表
-        const result = await ctx.app.mysql.query(
+        const query = await ctx.app.mysql.query(
           'SELECT id, name, location, teacher, week, day, section FROM lesson WHERE classes LIKE ?',
           [`%${class_name}%`]
         );
 
-        if (result.length > 0) {
+        if (query.length > 0) {
           // 有结果，存入 Redis
-          const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(result), 'EX', 86400); // 24 小时过期
+          const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(query), 'EX', 86400); // 24 小时过期
 
           if (cache_update === 'OK') {
             // 更新成功
             ctx.body = {
               code: 200,
               message: '班级课表获取成功',
-              data: result
+              data: query
             };
           } else {
             // 更新失败

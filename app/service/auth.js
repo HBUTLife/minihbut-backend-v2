@@ -41,7 +41,7 @@ class AuthService extends Service {
           // 登录成功
           const cookie_uid = login.find(item => item.startsWith('uid='));
           const cookie_route = login.find(item => item.startsWith('route='));
-          const hit = await ctx.app.mysql.update(
+          const update = await ctx.app.mysql.update(
             'user',
             {
               jw_uid: cookie_uid.replace('uid=', ''),
@@ -54,7 +54,7 @@ class AuthService extends Service {
               }
             }
           );
-          if (hit.affectedRows === 1) {
+          if (update.affectedRows === 1) {
             // 更新成功
             return {
               code: 200,
@@ -105,19 +105,19 @@ class AuthService extends Service {
 
     const tryRequest = async url => {
       try {
-        const result = await ctx.curl(url, {
+        const request = await ctx.curl(url, {
           method: 'GET',
           headers: {
             cookie: cookies.join('; ')
           }
         });
 
-        if (result.headers['set-cookie']) {
+        if (request.headers['set-cookie']) {
           // 收集新的 Cookies
-          cookies = cookies.concat(result.headers['set-cookie'].map(cookie => cookie.split(';')[0]));
+          cookies = cookies.concat(request.headers['set-cookie'].map(cookie => cookie.split(';')[0]));
         }
-        if (result.status >= 300 && result.status < 400) {
-          const location = result.headers.location;
+        if (request.status >= 300 && request.status < 400) {
+          const location = request.headers.location;
           if (location) {
             await tryRequest(location); // 跳转并等待完成
           }

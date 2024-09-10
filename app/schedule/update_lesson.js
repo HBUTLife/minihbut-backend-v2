@@ -48,7 +48,7 @@ class UpdateLesson extends Subscription {
         const total_page = enter.data.totalPages; // 总页数
         for (let page = 1; page <= total_page; page++) {
           // 请求该页数据
-          const result = await ctx.curl(
+          const request = await ctx.curl(
             ctx.app.config.jwxt.base +
               ctx.app.config.jwxt.lesson +
               `?gridtype=jqgrid&page.size=50&page.pn=${page}&sort=kcmc&order=asc&xnxq=${term}`,
@@ -59,9 +59,9 @@ class UpdateLesson extends Subscription {
               dataType: 'json'
             }
           );
-          if (result.status === 200 && result.data.results.length > 0) {
+          if (request.status === 200 && request.data.results.length > 0) {
             // 获取成功且有数据，进行处理和插入
-            await this.processData(result.data.results);
+            await this.processData(request.data.results);
           }
         }
       }

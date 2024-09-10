@@ -44,9 +44,9 @@ class TimetablePersonAddController extends Controller {
     };
 
     // 写入数据库
-    const hit = await ctx.app.mysql.insert('timetable_custom', data);
+    const insert = await ctx.app.mysql.insert('timetable_custom', data);
 
-    if (hit.affectedRows === 1) {
+    if (insert.affectedRows === 1) {
       // 写入成功，若原有课表缓存则更新缓存
       const cache_key = `timetable_person_${user.student_id}_${term}`;
       const cache = await ctx.app.redis.get(cache_key);

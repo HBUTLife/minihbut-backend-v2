@@ -26,13 +26,13 @@ class TimetablePersonDeleteController extends Controller {
     const user = ctx.user_info;
 
     // 删除操作
-    const hit = await ctx.app.mysql.delete('timetable_custom', {
+    const del = await ctx.app.mysql.delete('timetable_custom', {
       id,
       term,
       student_id: user.student_id
     });
 
-    if (hit.affectedRows === 1) {
+    if (del.affectedRows === 1) {
       // 删除成功，若原有课表缓存则更新缓存
       const cache_key = `timetable_person_${user.student_id}_${term}`;
       const cache = await ctx.app.redis.get(cache_key);

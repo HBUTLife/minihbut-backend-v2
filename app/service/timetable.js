@@ -23,17 +23,17 @@ class TimetableService extends Service {
     try {
       const timetable_base_url = ctx.app.config.jwxt.base + ctx.app.config.jwxt.timetable;
       const timetable_url = `${timetable_base_url}?xnxq=${term}&xhid=${pass[0].jw_id}`;
-      const result = await ctx.curl(timetable_url, {
+      const request = await ctx.curl(timetable_url, {
         headers: {
           cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
         },
         dataType: 'json'
       });
-      if (result.status === 200) {
+      if (request.status === 200) {
         // 获取成功
-        if (result.data.length > 0) {
+        if (request.data.length > 0) {
           // 有数据，更新 MySQL 和 Redis
-          const data = await this.databaseUpdate(student_id, term, result.data); // 写入 MySQL 并获取原始课表
+          const data = await this.databaseUpdate(student_id, term, request.data); // 写入 MySQL 并获取原始课表
           const custom = await this.cacheUpdate(student_id, term, data); // 写入 Redis 并获取自定义课表
           const final_data = data.concat(custom);
 

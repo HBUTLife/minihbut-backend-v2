@@ -58,10 +58,10 @@ class AuthIdaasLoginController extends Controller {
 
           try {
             // 获取个人信息
-            const result = await ctx.app.mysql.select('user', { where: { student_id: username } });
-            const info = ctx.service.auth.parseUserInfo(result[0]);
+            const query = await ctx.app.mysql.select('user', { where: { student_id: username } });
+            const info = ctx.service.auth.parseUserInfo(query[0]);
 
-            if (process_info.status === 1 && result.length > 0) {
+            if (process_info.status === 1 && query.length > 0) {
               // 存入/更新信息成功
               ctx.body = {
                 code: 200,

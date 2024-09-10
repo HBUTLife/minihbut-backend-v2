@@ -55,13 +55,13 @@ class UserAvatarController extends Controller {
       // 更新头像链接
       const update_time = dayjs().unix();
       const url = `https://i0.stslb.com/sfs/${bucket}/${filePath}`;
-      const hit = await ctx.app.mysql.update(
+      const update = await ctx.app.mysql.update(
         'user',
         { avatar: url, update_time },
         { where: { student_id: user.student_id } }
       );
 
-      if (hit.affectedRows === 1) {
+      if (update.affectedRows === 1) {
         // 更新成功
         ctx.body = {
           code: 200,

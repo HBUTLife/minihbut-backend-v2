@@ -26,16 +26,16 @@ class TimetablePersonExportController extends Controller {
     const user = ctx.user_info;
 
     // 查询是否已经生成过 Token
-    const result = await ctx.app.mysql.select('timetable_export', {
+    const query = await ctx.app.mysql.select('timetable_export', {
       where: {
         term,
         student_id: user.student_id
       }
     });
 
-    if (result.length > 0) {
+    if (query.length > 0) {
       // 有数据，直接返回
-      const data = result[0];
+      const data = query[0];
       delete data.id;
 
       ctx.body = {
@@ -69,9 +69,9 @@ class TimetablePersonExportController extends Controller {
         student_id: user.student_id
       };
 
-      const hit = await ctx.app.mysql.insert('timetable_export', data);
+      const insert = await ctx.app.mysql.insert('timetable_export', data);
 
-      if (hit.affectedRows === 1) {
+      if (insert.affectedRows === 1) {
         // 插入成功
         ctx.body = {
           code: 200,

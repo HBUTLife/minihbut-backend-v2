@@ -234,14 +234,14 @@ class RankListController extends Controller {
 
     if (count > 0) {
       // 数据库内有数据，更新数据
-      const hit = await ctx.app.mysql.update('rank', parse_data, {
+      const update = await ctx.app.mysql.update('rank', parse_data, {
         where: {
           student_id,
           term
         }
       });
 
-      if (hit.affectedRows === 1) {
+      if (update.affectedRows === 1) {
         // 更新成功
         return {
           status: 1,
@@ -253,9 +253,9 @@ class RankListController extends Controller {
     }
 
     // 数据库内无数据，插入数据
-    const hit = await ctx.app.mysql.insert('rank', parse_data);
+    const insert = await ctx.app.mysql.insert('rank', parse_data);
 
-    if (hit.affectedRows === 1) {
+    if (insert.affectedRows === 1) {
       // 插入成功
       return {
         status: 1,

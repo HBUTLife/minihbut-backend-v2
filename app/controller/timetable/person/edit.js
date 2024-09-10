@@ -51,7 +51,7 @@ class TimetablePersonEditController extends Controller {
       };
 
       // 更新数据库
-      const hit = await ctx.app.mysql.update('timetable_custom', data, {
+      const update = await ctx.app.mysql.update('timetable_custom', data, {
         where: {
           id,
           term,
@@ -59,7 +59,7 @@ class TimetablePersonEditController extends Controller {
         }
       });
 
-      if (hit.affectedRows === 1) {
+      if (update.affectedRows === 1) {
         // 更新成功，若原有课表缓存则更新缓存
         const cache_key = `timetable_person_${user.student_id}_${term}`;
         const cache = await ctx.app.redis.get(cache_key);
