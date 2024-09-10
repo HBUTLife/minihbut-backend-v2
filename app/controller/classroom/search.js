@@ -13,7 +13,7 @@ const createRule = {
 
 class ClassroomSearchController extends Controller {
   /**
-   * 空教室查询方法
+   * 空教室查询
    */
   async index() {
     const { ctx } = this;
@@ -56,9 +56,7 @@ class ClassroomSearchController extends Controller {
         // 请求教务系统空教室查询接口
         const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.classroom, {
           method: 'GET',
-          headers: {
-            cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
-          },
+          headers: { cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}` },
           data: {
             gridtype: 'jqgrid',
             'page.size': '500',
@@ -124,7 +122,7 @@ class ClassroomSearchController extends Controller {
           };
         }
       } catch (err) {
-        // 教务系统无法访问，返回错误
+        // 教务系统接口请求失败
         ctx.logger.error(err);
 
         ctx.body = {

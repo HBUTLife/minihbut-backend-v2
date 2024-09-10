@@ -162,6 +162,8 @@ class AuthIdaasLoginController extends Controller {
         code: 500,
         message: '服务器内部错误'
       };
+
+      return false;
     }
   }
 
