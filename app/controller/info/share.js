@@ -31,38 +31,53 @@ class InfoShareController extends Controller {
         data: JSON.parse(cache)
       };
     } else {
-      // 无缓存，获取分享信息
-      const query = await ctx.app.mysql.query('SELECT title, image, path, cache_time FROM share WHERE id = ?', [id]);
+      // 无缓存
+      try {
+        // 获取分享信息
+        const query = await ctx.app.mysql.query('SELECT title, image, path, cache_time FROM share WHERE id = ?', [id]);
 
-      // 无分享信息
-      if (query.length === 0) {
-        ctx.body = {
-          code: 404,
-          message: '未找到分享信息'
-        };
-        return;
-      }
+        // 无分享信息
+        if (query.length === 0) {
+          ctx.body = {
+            code: 404,
+            message: '未找到分享信息'
+          };
+          return;
+        }
 
-      // 有分享信息，存入缓存
-      const data = query[0];
-      delete data.cache_time;
-      const cache_update = await ctx.app.redis.set(
-        cache_key,
-        JSON.stringify(data),
-        'EX',
-        query[0].cache_time ? query[0].cache_time : 300
-      ); // 默认 5 分钟
+        // 有分享信息，信息处理
+        const data = query[0];
+        delete data.cache_time;
 
-      if (cache_update === 'OK') {
-        ctx.body = {
-          code: 200,
-          message: '分享信息获取成功',
-          data
-        };
-      } else {
+        // 写入 Redis缓存
+        const cache_update = await ctx.app.redis.set(
+          cache_key,
+          JSON.stringify(data),
+          'EX',
+          query[0].cache_time ? query[0].cache_time : 300
+        ); // 默认 5 分钟
+
+        if (cache_update === 'OK') {
+          // 缓存成功
+          ctx.body = {
+            code: 200,
+            message: '分享信息获取成功',
+            data
+          };
+        } else {
+          // 缓存失败
+          ctx.body = {
+            code: 500,
+            message: '服务器内部错误'
+          };
+        }
+      } catch (err) {
+        // 数据库查询失败
+        ctx.logger.error(err);
+
         ctx.body = {
           code: 500,
-          message: '分享信息缓存出错'
+          message: '服务器内部错误'
         };
       }
     }
