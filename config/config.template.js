@@ -32,5 +32,7 @@ exports.minio = {
   secretKey: ''
 };
 
-// 其他信息获取配置
-exports.info_extra = ''; // 即将弃用
+// 日志配置
+exports.logger = {
+  level: 'ERROR'
+};

@@ -39,18 +39,24 @@ module.exports = () => {
     reset: '/api/v1/idaas-idp.hbut.edu.cn/set_password' // 设置密码
   };
 
-  // 腾讯位置服务接口配置
-  config.lbs = {
-    base: 'https://apis.map.qq.com',
-    weather: '/ws/weather/v1', // 天气服务 (10000 QPS/day, 5 QPS/second)
-    key: 'B7YBZ-HBZWN-OXUFL-SRLKX-FJEHT-T2F23' // 腾讯位置服务 Key
+  // 和风天气接口配置
+  config.qweather = {
+    // base: 'https://devapi.qweather.com', // 免费接口地址
+    // key: 'c406bedc167d4c28837effa09d4efea5' // 免费 Key
+    base: 'https://api.qweather.com', // 付费接口地址
+    key: 'aa5bc22d1a894af1a230918b04ddba15', // 官方 Key
+    now: '/v7/weather/now', // 实时天气
+    location: '101200113' // 默认位置 湖北省武汉市洪山区
   };
 
   // 小程序配置
   config.wechat = {
-    app_id: 'wx42a9beac92f39a9a',
-    app_secret: 'd1562932c12945fbfd02813c518f5092',
-    api_url: 'https://api.weixin.qq.com/sns/jscode2session'
+    base: 'https://api.weixin.qq.com',
+    url: {
+      jscode2session: '/sns/jscode2session' // 小程序登录
+    },
+    appId: 'wx42a9beac92f39a9a', // 小程序 appId
+    appSecret: 'd1562932c12945fbfd02813c518f5092' // 小程序 appSecret
   };
 
   // 公共 jwt 配置
@@ -86,6 +92,11 @@ module.exports = () => {
   config.multipart = {
     mode: 'stream',
     fileSize: '3mb' // 限制上传最大 3 MB
+  };
+
+  // 日志配置
+  config.logger = {
+    outputJSON: true
   };
 
   return {
