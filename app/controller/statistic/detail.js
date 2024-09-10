@@ -39,79 +39,90 @@ class StatisticDetailController extends Controller {
         data: JSON.parse(cache)
       };
     } else {
-      // 不存在缓存，则更新
-      const result = await this.app.mysql.select('score', {
-        where: {
-          name,
-          teacher
-        },
-        orders: [['score', 'desc']]
-      });
+      // 不存在缓存
+      try {
+        // 数据库获取
+        const query = await this.app.mysql.select('score', {
+          where: {
+            name,
+            teacher
+          },
+          orders: [['score', 'desc']]
+        });
 
-      const total_number = result.length; // 样本总量
+        const total_number = query.length; // 样本总量
 
-      // 样本量少于30不予展示
-      if (total_number < 30) {
-        this.ctx.body = {
-          code: 416,
-          message: '给分统计样本量少于30'
-        };
-        return;
-      }
-
-      // 变量定义
-      let section1 = 0; // 90分以上计数
-      let section2 = 0; // 80-90分计数
-      let section3 = 0; // 70-80分计数
-      let section4 = 0; // 60-70分计数
-      let section5 = 0; // 60分以下计数
-      let total_score = 0; // 总分
-
-      // 遍历循环成绩并统计数量
-      for (const item of result) {
-        const score = item.score;
-        if (score >= 90) {
-          section1++;
-        } else if (score < 90 && score >= 80) {
-          section2++;
-        } else if (score < 80 && score >= 70) {
-          section3++;
-        } else if (score < 70 && score >= 60) {
-          section4++;
-        } else {
-          section5++;
+        // 样本量少于30不予展示
+        if (total_number < 30) {
+          this.ctx.body = {
+            code: 416,
+            message: '给分统计样本量少于30'
+          };
+          return;
         }
-        total_score = total_score + score;
-      }
 
-      // 输出
-      const output = {
-        total_number, // 样本量
-        highest_score: result[0].score, // 最高分
-        average_score: (total_score / total_number).toFixed(2), // 平均分，保留2位小数
-        up_90: ((section1 / total_number) * 100).toFixed(2).toString() + '%', // 90分以上比例
-        between_80_90: ((section2 / total_number) * 100).toFixed(2).toString() + '%', // 80-90分比例
-        between_70_80: ((section3 / total_number) * 100).toFixed(2).toString() + '%', // 70-80分比例
-        between_60_70: ((section4 / total_number) * 100).toFixed(2).toString() + '%', // 60-70分比例
-        down_60: ((section5 / total_number) * 100).toFixed(2).toString() + '%', // 60分以下比例
-        last_update: dayjs().unix() // 最后更新时间
-      };
+        // 变量定义
+        let section1 = 0; // 90分以上计数
+        let section2 = 0; // 80-90分计数
+        let section3 = 0; // 70-80分计数
+        let section4 = 0; // 60-70分计数
+        let section5 = 0; // 60分以下计数
+        let total_score = 0; // 总分
 
-      // 存入 Redis
-      const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(output), 'EX', 3600); // 1 小时过期
+        // 遍历循环成绩并统计数量
+        for (const item of query) {
+          const score = item.score;
+          if (score >= 90) {
+            section1++;
+          } else if (score < 90 && score >= 80) {
+            section2++;
+          } else if (score < 80 && score >= 70) {
+            section3++;
+          } else if (score < 70 && score >= 60) {
+            section4++;
+          } else {
+            section5++;
+          }
+          total_score = total_score + score;
+        }
 
-      if (cache_update === 'OK') {
-        // 更新成功
-        ctx.body = {
-          code: 200,
-          message: '给分统计详情获取成功',
-          data: output
+        // 输出
+        const output = {
+          total_number, // 样本量
+          highest_score: query[0].score, // 最高分
+          average_score: (total_score / total_number).toFixed(2), // 平均分，保留2位小数
+          up_90: ((section1 / total_number) * 100).toFixed(2).toString() + '%', // 90分以上比例
+          between_80_90: ((section2 / total_number) * 100).toFixed(2).toString() + '%', // 80-90分比例
+          between_70_80: ((section3 / total_number) * 100).toFixed(2).toString() + '%', // 70-80分比例
+          between_60_70: ((section4 / total_number) * 100).toFixed(2).toString() + '%', // 60-70分比例
+          down_60: ((section5 / total_number) * 100).toFixed(2).toString() + '%', // 60分以下比例
+          last_update: dayjs().unix() // 最后更新时间
         };
-      } else {
-        // 更新失败
+
+        // 存入 Redis
+        const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(output), 'EX', 3600); // 1 小时过期
+
+        if (cache_update === 'OK') {
+          // 更新成功
+          ctx.body = {
+            code: 200,
+            message: '给分统计详情获取成功',
+            data: output
+          };
+        } else {
+          // 更新失败
+          ctx.body = {
+            code: 500,
+            message: '服务器内部错误'
+          };
+        }
+      } catch (err) {
+        // 数据库查询失败
+        ctx.logger.error(err);
+
         ctx.body = {
           code: 500,
-          message: '给分统计详情缓存更新失败'
+          message: '服务器内部错误'
         };
       }
     }
