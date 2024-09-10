@@ -13,13 +13,15 @@ class AuthService extends Service {
    */
   async idaas(username) {
     const { ctx } = this;
-    const user = await ctx.app.mysql.select('user', {
+
+    const query = await ctx.app.mysql.select('user', {
       where: {
         student_id: username
       }
     });
+
     // 获取并解密密码
-    const password = tripledes.decrypt(user[0].password, ctx.app.config.encryption.secret).toString(cryptojs.enc.Utf8);
+    const password = tripledes.decrypt(query[0].password, ctx.app.config.encryption.secret).toString(cryptojs.enc.Utf8);
     try {
       // 请求统一身份认证接口获取 access_token, refresh_token, locale
       const idaas = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.login, {

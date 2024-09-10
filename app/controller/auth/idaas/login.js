@@ -42,7 +42,11 @@ class AuthIdaasLoginController extends Controller {
         const idaas_cookies = request.headers['set-cookie'].map(cookie => cookie.split(';')[0]);
 
         // 请求登录教务系统
-        const login = await this.tryLogin(ctx.app.config.idaas.base + ctx.app.config.idaas.sso, idaas_cookies, ctx);
+        const login = await ctx.service.auth.tryLogin(
+          ctx.app.config.idaas.base + ctx.app.config.idaas.sso,
+          idaas_cookies,
+          ctx
+        );
 
         if (login.some(item => item.startsWith('uid=')) && login.some(item => item.startsWith('route='))) {
           // 登录成功
@@ -165,49 +169,6 @@ class AuthIdaasLoginController extends Controller {
 
       return false;
     }
-  }
-
-  /**
-   * 尝试登录并返回登录过程中所有 Cookie
-   * @param {string} first_url 第一次请求 URL
-   * @param {object} first_cookies 第一次请求 Cookies
-   * @param {*} ctx ctx
-   * @return {*} 返回 Cookies 或 false
-   */
-  async tryLogin(first_url, first_cookies, ctx) {
-    let cookies = [...first_cookies];
-    let success = true; // 标记请求是否成功
-
-    const tryRequest = async url => {
-      try {
-        const request = await ctx.curl(url, {
-          method: 'GET',
-          headers: {
-            cookie: cookies.join('; ')
-          }
-        });
-
-        if (request.headers['set-cookie']) {
-          // 收集新的 Cookies
-          cookies = cookies.concat(request.headers['set-cookie'].map(cookie => cookie.split(';')[0]));
-        }
-        if (request.status >= 300 && request.status < 400) {
-          const location = request.headers.location;
-          if (location) {
-            await tryRequest(location); // 跳转并等待完成
-          }
-        }
-      } catch (err) {
-        ctx.logger.error(err); // 输出错误信息
-
-        success = false; // 标记为失败
-        return; // 结束当前请求链
-      }
-    };
-
-    await tryRequest(first_url); // 等待所有请求完成
-
-    return success ? cookies : false; // 如果成功返回 Cookies，否则返回 false
   }
 
   /**
