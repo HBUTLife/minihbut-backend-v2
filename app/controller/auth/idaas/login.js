@@ -150,8 +150,8 @@ class AuthIdaasLoginController extends Controller {
       } else {
         // 未注册
         ctx.body = {
-          code: 500,
-          message: '教务系统无法访问'
+          code: 503,
+          message: '用户未注册，但目前教务系统无法访问'
         };
       }
     } catch (err) {
