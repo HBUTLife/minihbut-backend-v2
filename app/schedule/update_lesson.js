@@ -15,58 +15,86 @@ class UpdateLesson extends Subscription {
   // subscribe 是真正定时任务执行时被运行的函数
   async subscribe() {
     const { ctx } = this;
-    // 获取登录凭证
-    const pass = await ctx.app.mysql.select('user', { where: { id: 1 } });
-    // 重新授权登录避免用户已过期
-    const auth = await ctx.service.auth.idaas(pass[0].student_id);
-    if (auth.code !== 200) {
-      // 授权失败则停止更新
-      return;
-    }
-
-    // 获取最新学期
-    const terms = await ctx.app.mysql.select('term', { orders: [['id', 'desc']] });
-    const term = terms[0].name;
 
     try {
-      // 首次请求获取总页数
-      const enter = await ctx.curl(
-        ctx.app.config.jwxt.base +
-          ctx.app.config.jwxt.lesson +
-          `?gridtype=jqgrid&page.size=50&page.pn=1&sort=kcmc&order=asc&xnxq=${term}`,
-        {
-          headers: {
-            cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
-          },
-          dataType: 'json'
-        }
-      );
-      if (enter.status === 200 && enter.data.total > 0) {
-        // 获取成功且有数据
-        await ctx.app.mysql.query('TRUNCATE TABLE lesson'); // 清空表 lesson
-        // 遍历循环存入数据库
-        const total_page = enter.data.totalPages; // 总页数
-        for (let page = 1; page <= total_page; page++) {
-          // 请求该页数据
-          const request = await ctx.curl(
-            ctx.app.config.jwxt.base +
-              ctx.app.config.jwxt.lesson +
-              `?gridtype=jqgrid&page.size=50&page.pn=${page}&sort=kcmc&order=asc&xnxq=${term}`,
-            {
-              headers: {
-                cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`
-              },
-              dataType: 'json'
+      // 获取登录凭证
+      const query = await ctx.app.mysql.select('user', { where: { id: 1 } });
+
+      // 重新授权登录避免用户已过期
+      const auth = await ctx.service.auth.idaas(query[0].student_id);
+
+      if (auth.code !== 200) {
+        // 授权失败则停止更新
+        return;
+      }
+
+      try {
+        // 获取最新学期
+        const query2 = await ctx.app.mysql.select('term', { orders: [['id', 'desc']] });
+        const term = query2[0].name;
+
+        try {
+          // 首次请求获取总页数
+          const enter = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.lesson, {
+            headers: {
+              cookie: `uid=${query[0].jw_uid}; route=${query[0].jw_route}`
+            },
+            data: {
+              gridtype: 'jqgrid',
+              'page.size': '50',
+              'page.pn': '1',
+              sort: 'kcmc',
+              order: 'asc',
+              xnxq: term
+            },
+            dataType: 'json'
+          });
+
+          if (enter.status === 200 && enter.data.total > 0) {
+            // 获取成功且有数据
+            await ctx.app.mysql.query('TRUNCATE TABLE lesson'); // 清空表 lesson
+
+            // 遍历循环存入数据库
+            const total_page = enter.data.totalPages; // 总页数
+            for (let page = 1; page <= total_page; page++) {
+              // 请求该页数据
+              try {
+                const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.lesson, {
+                  headers: {
+                    cookie: `uid=${query[0].jw_uid}; route=${query[0].jw_route}`
+                  },
+                  data: {
+                    gridtype: 'jqgrid',
+                    'page.size': '50',
+                    'page.pn': page.toString(),
+                    sort: 'kcmc',
+                    order: 'asc',
+                    xnxq: term
+                  },
+                  dataType: 'json'
+                });
+
+                if (request.status === 200 && request.data.results.length > 0) {
+                  // 获取成功且有数据，进行处理和插入
+                  await this.processData(request.data.results, ctx);
+                }
+              } catch (err) {
+                // 请求失败，跳过该页
+                ctx.logger.error(err);
+                continue;
+              }
             }
-          );
-          if (request.status === 200 && request.data.results.length > 0) {
-            // 获取成功且有数据，进行处理和插入
-            await this.processData(request.data.results);
           }
+        } catch (err) {
+          // 教务系统出错不进行更新
+          ctx.logger.error(err);
         }
+      } catch (err) {
+        // 数据库查询失败
+        ctx.logger.error(err);
       }
     } catch (err) {
-      // 教务系统出错不进行更新
+      // 数据库查询失败
       ctx.logger.error(err);
     }
   }
@@ -171,8 +199,7 @@ class UpdateLesson extends Subscription {
   }
 
   // 处理数据
-  async processData(data) {
-    const { ctx } = this;
+  async processData(data, ctx) {
     const last_update = dayjs().unix();
     const raw = data.map(item => ({
       name: item.kcmc
@@ -212,6 +239,7 @@ class UpdateLesson extends Subscription {
         } catch (err) {
           // 丢出报错
           ctx.logger.error(err);
+          continue;
         }
       }
     }
