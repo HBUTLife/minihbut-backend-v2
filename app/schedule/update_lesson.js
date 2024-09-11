@@ -84,6 +84,8 @@ class UpdateLesson extends Subscription {
                 continue;
               }
             }
+
+            ctx.logger.info('全校课表更新成功');
           }
         } catch (err) {
           // 教务系统出错不进行更新
@@ -99,94 +101,55 @@ class UpdateLesson extends Subscription {
     }
   }
 
-  // range
-  range(arr) {
-    if (arr.length === 1) {
-      arr = [...arr, ...arr];
-    }
-    const [start, end] = arr.map(item => Number(item));
-    return Array.from({ length: end - start + 1 }, (_, i) => i + start);
-  }
+  // 处理数据
+  async processData(data, ctx) {
+    const last_update = dayjs().unix();
+    const raw = data.map(item => ({
+      term: item.xnxq, // 学期
+      name: item.kcmc
+        .replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '')
+        .replaceAll('</a>', '')
+        .replace('（', '(')
+        .replace('）', ')'), // 课程名称
+      teacher: item.skjs
+        ? item.skjs
+            .replace(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
+            .replaceAll('</a>', '') // 教师名称
+        : '',
+      classes: item.jxbzc
+        ? this.removeAllBrackets(
+            item.jxbzc
+              .replace(/<a href="javascript:void\(0\);" onclick="openBjkb\('.*?','.*?'\)">/g, '')
+              .replaceAll('</a>', '')
+          )
+        : '', // 班级组成
+      timeAndLocation: this.processTimeAndLocation(item.sksjdd) // 上课时间
+    }));
 
-  // 判断是否为周次
-  isWeek(value) {
-    return /^第.*周$/.test(value);
-  }
-
-  // 判断是否为星期
-  isDay(value) {
-    return /^星期/.test(value);
-  }
-
-  // 判断是否为节次
-  isSection(value) {
-    return /节$/.test(value);
-  }
-
-  // 获取周次
-  getWeek(value) {
-    return value
-      .replace('第', '')
-      .replace('周', '')
-      .split(',')
-      .map(item => this.range(item.split('-')))
-      .flat();
-  }
-
-  // 获取星期
-  getDay(value) {
-    const days = {
-      星期一: 1,
-      星期二: 2,
-      星期三: 3,
-      星期四: 4,
-      星期五: 5,
-      星期六: 6,
-      星期日: 7
-    };
-    return days[value];
-  }
-
-  // 获取节次
-  getSelection(value) {
-    return this.range(value.replace('节', '').split('-'));
-  }
-
-  // 处理
-  handle(timeAndPlace) {
-    let arr = timeAndPlace.split(' ');
-    arr = arr.map(item => {
-      if (this.isWeek(item)) {
-        // 处理周次
-        return this.getWeek(item);
-      } else if (this.isDay(item)) {
-        // 处理星期
-        return this.getDay(item);
-      } else if (this.isSection(item)) {
-        // 处理节次
-        return this.getSelection(item);
-      }
-      // 上课地点直接返回
-      return item;
-    });
-
-    // 处理数组，插入上课地点，返回 length 为 4 的倍数的数组
-    let left = 0;
-    let right = 1;
-    while (right < arr.length) {
-      if (typeof arr[right - 1] === 'number' && typeof arr[right + 1] === 'object' && left === 0) {
-        left = right + 1;
-        right++;
-      } else if (typeof arr[right] === 'string' && left !== 0) {
-        arr.splice(left, 0, arr[right]);
-        right = left + 1;
-        left = 0;
-      } else {
-        right++;
+    // 遍历本次请求的全部课程
+    for (const item of raw) {
+      // 遍历上课时间和地点，并将数据插入数据库
+      for (const item2 of item.timeAndLocation) {
+        // 插入数据库
+        try {
+          await ctx.app.mysql.insert('lesson', {
+            term: item.term,
+            name: item.name,
+            location: item2.location,
+            teacher: item.teacher,
+            classes: item.classes,
+            week: item2.week,
+            day: item2.day,
+            section: item2.section,
+            last_update
+          });
+        } catch (err) {
+          // 数据库插入失败，继续下一个迭代
+          ctx.logger.error(err);
+          continue;
+        }
       }
     }
-
-    return arr;
   }
 
   // 去除所有的括号及内容
@@ -198,51 +161,151 @@ class UpdateLesson extends Subscription {
     return result;
   }
 
-  // 处理数据
-  async processData(data, ctx) {
-    const last_update = dayjs().unix();
-    const raw = data.map(item => ({
-      name: item.kcmc
-        .replace(/<a href="javascript:void\(0\);" onclick="openKckb\('.*?'\)">/g, '')
-        .replaceAll('</a>', ''),
-      teacher: item.skjs
-        ? item.skjs
-            .replace(/<a href="javascript:void\(0\);" onclick="openJskb\('.*?','.*?'\)">/g, '')
-            .replaceAll('</a>', '')
-        : '',
-      classes: item.jxbzc
-        ? this.removeAllBrackets(
-            item.jxbzc
-              .replace(/<a href="javascript:void\(0\);" onclick="openBjkb\('.*?','.*?'\)">/g, '')
-              .replaceAll('</a>', '')
-          )
-        : '',
-      term: item.xnxq,
-      timeAndPlace: this.handle(item.sksjdd)
-    }));
+  // 处理上课时间和上课地点
+  processTimeAndLocation(str) {
+    const list = [];
 
-    for (const item of raw) {
-      for (let i = 0; i < item.timeAndPlace.length; i += 4) {
-        try {
-          // 写入数据库
-          await ctx.app.mysql.insert('lesson', {
-            name: item.name.replace('（', '(').replace('）', ')'),
-            location: item.timeAndPlace[i + 3].replace('【', '').replace('】', '').replace(';', ''),
-            teacher: item.teacher,
-            classes: item.classes.replace('...', ''),
-            week: item.timeAndPlace[i].toString(),
-            day: item.timeAndPlace[i + 1],
-            section: item.timeAndPlace[i + 2].toString(),
-            term: item.term,
-            last_update
-          });
-        } catch (err) {
-          // 丢出报错
-          ctx.logger.error(err);
-          continue;
+    if (str.includes('; ')) {
+      // 有1分隔符
+      const part = str.split('; ');
+
+      for (const item of part) {
+        const get_location = item.match(/【(.*?)】/); // 获取上课地点
+        const location = get_location ? get_location[1] : '无';
+        const times = item.replace(/【.*?】/g, ''); // 除去上课地点剩下的内容
+
+        if (times.includes(';')) {
+          // 有2分隔符
+          const arr = times.split(';');
+
+          for (const item2 of arr) {
+            list.push({ ...this.processTimeAndLocationPart(item2), location });
+          }
+        } else {
+          // 无分隔符
+          list.push({ ...this.processTimeAndLocationPart(times), location });
         }
       }
+    } else {
+      // 没有1分隔符
+      const get_location = str.match(/【(.*?)】/); // 获取上课地点
+      const location = get_location ? get_location[1] : '无';
+      const times = str.replace(/【.*?】/g, ''); // 除去上课地点剩下的内容
+
+      if (times.includes(';')) {
+        // 有2分隔符
+        const arr = times.split(';');
+
+        for (const item of arr) {
+          list.push({ ...this.processTimeAndLocationPart(item), location });
+        }
+      } else {
+        list.push({ ...this.processTimeAndLocationPart(times), location });
+      }
     }
+
+    return list;
+  }
+
+  // 处理上课时间和地点的部分
+  processTimeAndLocationPart(str) {
+    const part = str.split(' ');
+
+    return {
+      week: this.processWeek(part[0].replace('第', '').replace('周', '')), // 逗号分隔字符串周次
+      day: this.parseWeekDay(part[1]), // 整数星期
+      section: this.parseRangeToList(part[2].replace('节', '')) // 逗号分隔字符串节次
+    };
+  }
+
+  // 处理周次
+  processWeek(str) {
+    // 多个周次
+    if (str.includes(',')) {
+      const arr = str.split(',');
+
+      const list = [];
+      for (const item of arr) {
+        list.push(this.parseWeekOddOrEven(item));
+      }
+      return list.join(',');
+    }
+
+    // 单个周次
+    return this.parseWeekOddOrEven(str);
+  }
+
+  // 检测是否为单双周并对数据格式化
+  parseWeekOddOrEven(str) {
+    // 单周
+    if (str.includes('单')) {
+      return this.parseRangeToListOdd(str.replace('(单)', ''));
+    }
+
+    // 双周
+    if (str.includes('双')) {
+      return this.parseRangeToListEven(str.replace('(双)', ''));
+    }
+
+    // 非单双周
+    return this.parseRangeToList(str);
+  }
+
+  // 格式化单周
+  parseRangeToListOdd(str) {
+    const [start, end] = str.split('-').map(Number); // 将起始和结束数字转换为整数
+    const result = [];
+    for (let i = start; i <= end; i++) {
+      if (i % 2 !== 0) {
+        // 判断是否为奇数
+        result.push(i);
+      }
+    }
+    return result.join(','); // 将数组转换为逗号分隔的字符串
+  }
+
+  // 格式化双周
+  parseRangeToListEven(str) {
+    const [start, end] = str.split('-').map(Number); // 将起始和结束数字转换为整数
+    const result = [];
+    for (let i = start; i <= end; i++) {
+      if (i % 2 === 0) {
+        // 判断是否为偶数
+        result.push(i);
+      }
+    }
+    return result.join(','); // 将数组转换为逗号分隔的字符串
+  }
+
+  // 格式化区间字符串为逗号分隔
+  parseRangeToList(str) {
+    // 单个数字
+    if (/^\d+$/.test(str)) {
+      return str;
+    }
+
+    // 非单个数字
+    const [start, end] = str.split('-').map(Number);
+    const result = [];
+    for (let i = start; i <= end; i++) {
+      result.push(i);
+    }
+    return result.join(',');
+  }
+
+  // 转换文字星期为数字
+  parseWeekDay(str) {
+    const map = {
+      星期一: 1,
+      星期二: 2,
+      星期三: 3,
+      星期四: 4,
+      星期五: 5,
+      星期六: 6,
+      星期日: 7
+    };
+
+    return map[str];
   }
 }
 

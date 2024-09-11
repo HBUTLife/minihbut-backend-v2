@@ -39,9 +39,12 @@ class UpdateTimetable extends Subscription {
             }
           } else {
             // 认证失败，下一位
+            ctx.logger.error(`更新课表失败：${item.student_id}`);
             continue;
           }
         }
+
+        ctx.logger.info('用户个人课表更新成功');
       } catch (err) {
         // 数据库查询失败
         ctx.logger.error(err);
