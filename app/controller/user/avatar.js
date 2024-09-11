@@ -63,6 +63,8 @@ class UserAvatarController extends Controller {
 
       if (update.affectedRows === 1) {
         // 更新成功
+        await ctx.app.redis.del(`user_info_${user.student_id}`);
+
         ctx.body = {
           code: 200,
           message: '头像上传成功',
