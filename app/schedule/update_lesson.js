@@ -35,7 +35,7 @@ class UpdateLesson extends Subscription {
 
         try {
           // 首次请求获取总页数
-          const enter = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.lesson, {
+          const enter = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.url.lesson, {
             headers: {
               cookie: `uid=${query[0].jw_uid}; route=${query[0].jw_route}`
             },
@@ -59,7 +59,7 @@ class UpdateLesson extends Subscription {
             for (let page = 1; page <= total_page; page++) {
               // 请求该页数据
               try {
-                const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.lesson, {
+                const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.url.lesson, {
                   headers: {
                     cookie: `uid=${query[0].jw_uid}; route=${query[0].jw_route}`
                   },

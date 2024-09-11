@@ -55,7 +55,7 @@ class RankListController extends Controller {
 
         try {
           // 请求教务系统排名信息页面
-          const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.rank, {
+          const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.url.rank, {
             method: 'GET',
             headers: {
               cookie: `uid=${query[0].jw_uid}; route=${query[0].jw_route}`

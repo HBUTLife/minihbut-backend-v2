@@ -20,13 +20,15 @@ module.exports = () => {
   // 教务系统接口配置
   config.jwxt = {
     base: 'https://jwxt.hbut.edu.cn',
-    info: '/admin/cjgl/xscjbbdy/printdgxscj', // 用户信息
-    score: '/admin/xsd/xsdcjcx/xsdQueryXscjList', // 成绩信息
-    rank: '/admin/cjgl/xscjbbdy/getXscjpm', // 排名信息
-    exam: '/admin/xsd/kwglXsdKscx/ajaxXsksList', // 考试信息
-    classroom: '/admin/system/jxzy/jsxx/getZyKjs', // 空教室
-    timetable: '/admin/pkgl/xskb/sdpkkbList', // 课表信息
-    lesson: '/admin/jsd/qxzkb/querylist' // 全校课表信息
+    url: {
+      info: '/admin/cjgl/xscjbbdy/printdgxscj', // 用户信息
+      score: '/admin/xsd/xsdcjcx/xsdQueryXscjList', // 成绩信息
+      rank: '/admin/cjgl/xscjbbdy/getXscjpm', // 排名信息
+      exam: '/admin/xsd/kwglXsdKscx/ajaxXsksList', // 考试信息
+      classroom: '/admin/system/jxzy/jsxx/getZyKjs', // 空教室
+      timetable: '/admin/pkgl/xskb/sdpkkbList', // 课表信息
+      lesson: '/admin/jsd/qxzkb/querylist' // 全校课表信息
+    }
   };
 
   // 统一身份认证接口配置

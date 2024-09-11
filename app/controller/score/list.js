@@ -46,7 +46,7 @@ class ScoreListController extends Controller {
 
       try {
         // 成绩获取地址
-        const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.score, {
+        const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.url.score, {
           method: 'GET',
           headers: {
             cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}`

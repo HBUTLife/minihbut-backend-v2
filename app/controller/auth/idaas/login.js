@@ -181,7 +181,7 @@ class AuthIdaasLoginController extends Controller {
    * @return {object} 返回 status, data
    */
   async processInfo(username, password, cookie_uid, cookie_route, ctx) {
-    const info_url = ctx.app.config.jwxt.base + ctx.app.config.jwxt.info;
+    const info_url = ctx.app.config.jwxt.base + ctx.app.config.jwxt.url.info;
 
     // 获取个人信息
     const request = await ctx.curl(info_url, {

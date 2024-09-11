@@ -54,7 +54,7 @@ class ClassroomSearchController extends Controller {
 
       try {
         // 请求教务系统空教室查询接口
-        const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.classroom, {
+        const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.url.classroom, {
           method: 'GET',
           headers: { cookie: `uid=${pass[0].jw_uid}; route=${pass[0].jw_route}` },
           data: {

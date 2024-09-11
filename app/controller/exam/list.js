@@ -49,7 +49,7 @@ class ExamListController extends Controller {
 
         try {
           // 请求教务系统考试列表接口
-          const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.exam, {
+          const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.url.exam, {
             method: 'GET',
             headers: { cookie: `uid=${query_user[0].jw_uid}; route=${query_user[0].jw_route}` },
             data: { xnxq: term },

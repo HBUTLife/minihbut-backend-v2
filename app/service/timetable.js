@@ -21,7 +21,7 @@ class TimetableService extends Service {
     });
 
     try {
-      const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.timetable, {
+      const request = await ctx.curl(ctx.app.config.jwxt.base + ctx.app.config.jwxt.url.timetable, {
         headers: {
           cookie: `uid=${query[0].jw_uid}; route=${query[0].jw_route}`
         },
