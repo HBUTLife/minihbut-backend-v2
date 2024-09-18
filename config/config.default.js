@@ -36,6 +36,7 @@ module.exports = () => {
     base: 'https://idaas-idp.hbut.edu.cn',
     login: '/api/v1/idaas-idp.hbut.edu.cn/login', // 登录
     sso: '/sso/tn-b6844f43ad554d15aaa73f4ed4319a52/ai-4153833891724dbcb30dea72926feb37/cas?service=https%3A%2F%2Fjwxt.hbut.edu.cn%2Fadmin%2Fcaslogin%2Fgrkb', // 单点验证
+    check: '/api/v1/idaas-idp.hbut.edu.cn/forget_password/v2', // 用户状态检测
     sms: '/api/v1/idaas-idp.hbut.edu.cn/forget_password/v2/sms', // 短信发送
     code: '/api/v1/idaas-idp.hbut.edu.cn/forget_password/v2/sms/token', // 验证码检测
     reset: '/api/v1/idaas-idp.hbut.edu.cn/set_password' // 设置密码
