@@ -169,6 +169,10 @@ class TimetableService extends Service {
         }
       });
 
+      query.forEach(item => {
+        item.self = true;
+      });
+
       // 将自定义课程加入课表列表
       const final_data = data.concat(query);
 
