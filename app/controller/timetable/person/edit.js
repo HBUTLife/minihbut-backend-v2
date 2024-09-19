@@ -42,7 +42,7 @@ class TimetablePersonEditController extends Controller {
           id: origin[0].id,
           name: ctx.request.body.name ? ctx.request.body.name : origin[0].name,
           location: ctx.request.body.location ? ctx.request.body.location : origin[0].location,
-          teacher: ctx.request.body.teacher ? ctx.request.body.teacher : origin[0].teacher,
+          teacher: ctx.request.body.teacher ? ctx.request.body.teacher : '',
           week: ctx.request.body.week ? ctx.request.body.week : origin[0].week,
           day: ctx.request.body.day ? parseInt(ctx.request.body.day) : origin[0].day,
           section: ctx.request.body.section ? ctx.request.body.section : origin[0].section,
