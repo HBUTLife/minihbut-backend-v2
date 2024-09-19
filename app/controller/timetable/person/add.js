@@ -48,17 +48,9 @@ class TimetablePersonAddController extends Controller {
       const insert = await ctx.app.mysql.insert('timetable_custom', data);
 
       if (insert.affectedRows === 1) {
-        // 写入成功，若原有课表缓存则更新缓存
-        const cache_key = `timetable_person_${user.student_id}_${term}`;
-        const cache = await ctx.app.redis.get(cache_key);
-
-        if (cache) {
-          // 存在缓存则更新
-          const origin_data = JSON.parse(cache);
-          data.self = true;
-          origin_data.push(data);
-          await ctx.app.redis.set(cache_key, JSON.stringify(origin_data), 'EX', 604800); // 7 天过期
-        }
+        // 写入成功，清除原有课表缓存
+        await ctx.app.redis.del(`timetable_person_${user.student_id}_${term}`); // 课程列表
+        await ctx.app.redis.del(`timetable_person_today_${user.student_id}`); // 即将开始课程列表
 
         ctx.body = {
           code: 200,

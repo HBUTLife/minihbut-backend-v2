@@ -62,18 +62,9 @@ class TimetablePersonEditController extends Controller {
           });
 
           if (update.affectedRows === 1) {
-            // 更新成功，若原有课表缓存则更新缓存
-            const cache_key = `timetable_person_${user.student_id}_${term}`;
-            const cache = await ctx.app.redis.get(cache_key);
-
-            if (cache) {
-              // 存在缓存则更新
-              const origin_data = JSON.parse(cache);
-              const final_data = origin_data.filter(item => item.id !== id);
-              data.self = true;
-              final_data.push(data);
-              await ctx.app.redis.set(cache_key, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
-            }
+            // 更新成功，清除原有课表缓存
+            await ctx.app.redis.del(`timetable_person_${user.student_id}_${term}`); // 课程列表
+            await ctx.app.redis.del(`timetable_person_today_${user.student_id}`); // 即将开始课程列表
 
             ctx.body = {
               code: 200,

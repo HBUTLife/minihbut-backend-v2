@@ -34,35 +34,19 @@ class TimetablePersonDeleteController extends Controller {
       });
 
       if (del.affectedRows === 1) {
-        // 删除成功，若原有课表缓存则更新缓存
-        const cache_key = `timetable_person_${user.student_id}_${term}`;
-        const cache = await ctx.app.redis.get(cache_key);
+        // 删除成功，清除原有课表缓存
+        await ctx.app.redis.del(`timetable_person_${user.student_id}_${term}`); // 课程列表
+        await ctx.app.redis.del(`timetable_person_today_${user.student_id}`); // 即将开始课程列表
 
-        if (cache) {
-          // 存在缓存则更新
-          const origin_data = JSON.parse(cache);
-          const final_data = origin_data.filter(item => item.id !== id);
-          const cache_update = await ctx.app.redis.set(cache_key, JSON.stringify(final_data), 'EX', 604800); // 7 天过期
-
-          if (cache_update === 'OK') {
-            // 缓存更新成功
-            ctx.body = {
-              code: 200,
-              message: '自定义课程删除成功',
-              data: {
-                id,
-                term,
-                student_id: user.student_id
-              }
-            };
-          } else {
-            // 缓存更新失败
-            ctx.body = {
-              code: 500,
-              message: '服务器内部错误'
-            };
+        ctx.body = {
+          code: 200,
+          message: '自定义课程删除成功',
+          data: {
+            id,
+            term,
+            student_id: user.student_id
           }
-        }
+        };
       } else if (del.affectedRows === 0) {
         // 不存在
         ctx.body = {
