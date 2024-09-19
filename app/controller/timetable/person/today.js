@@ -46,13 +46,21 @@ class TimetablePersonTodayController extends Controller {
 
           try {
             // 获取学期和星期符合的所有课程
-            const timetable = await ctx.app.mysql.select('timetable', {
+            const query2 = await ctx.app.mysql.select('timetable', {
               where: {
                 student_id: user.student_id,
                 day,
                 term: query[0].name
               }
             });
+            const query3 = await ctx.app.mysql.select('timetable_custom', {
+              where: {
+                student_id: user.student_id,
+                day,
+                term: query[0].name
+              }
+            });
+            const timetable = query2.concat(query3);
 
             // 对周次进行处理和选取
             const day_tables = [];
