@@ -13,7 +13,7 @@ class InfoSwiperGetController extends Controller {
     try {
       // 获取轮播列表
       const query = await ctx.app.mysql.query(
-        'SELECT id, title, image, type, url, miniprogram_id, is_ad FROM swiper WHERE expire_time >= ? ORDER BY id DESC',
+        'SELECT id, title, image, url, miniprogram_id, is_ad FROM swiper WHERE expire_time >= ? ORDER BY id DESC',
         [dayjs().format('YYYY-MM-DD')]
       );
 
