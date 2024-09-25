@@ -46,11 +46,11 @@ class AuthIdaasForgetSmsController extends Controller {
             dataType: 'json'
           });
 
-          // 账号不存在
+          // 帐号不存在
           if (request.data.errorCode === '200003002') {
             ctx.body = {
               code: 404,
-              message: '账号不存在'
+              message: '帐号不存在'
             };
             return;
           }
