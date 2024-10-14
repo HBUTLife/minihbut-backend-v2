@@ -51,6 +51,17 @@ class UpdateLesson extends Subscription {
           });
 
           if (enter.status === 200 && enter.data.total > 0) {
+            // 校验数据
+            const first_data = enter.data.results[0].sksjdd;
+            if (!first_data || first_data === '1') {
+              ctx.logger.error('全校课表数据校验失败，停止更新');
+              return;
+            }
+            if (first_data && first_data.split(' ').length === 0) {
+              ctx.logger.error('全校课表数据校验失败，停止更新');
+              return;
+            }
+
             // 获取成功且有数据
             await ctx.app.mysql.query('TRUNCATE TABLE lesson'); // 清空表 lesson
 
