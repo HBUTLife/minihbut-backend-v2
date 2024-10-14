@@ -21,7 +21,7 @@ class UpdateLesson extends Subscription {
       const query = await ctx.app.mysql.select('user', { where: { id: 1 } });
 
       // 重新授权登录避免用户已过期
-      const auth = await ctx.service.auth.idaas(query[0].student_id);
+      const auth = await ctx.service.auth.idaas(query[0].student_id, 1);
 
       if (auth.code !== 200) {
         // 授权失败则停止更新
