@@ -24,7 +24,7 @@ class AuthIdaasForgetCodeController extends Controller {
 
     try {
       // 请求统一身份认证验证码检验接口
-      const request = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.code, {
+      const request = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.forgetCode, {
         method: 'POST',
         headers: {
           'content-type': 'application/json'

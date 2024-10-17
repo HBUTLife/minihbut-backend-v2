@@ -24,7 +24,7 @@ class AuthIdaasForgetResetController extends Controller {
 
     try {
       // 请求统一身份认证密码重置接口
-      const request = await ctx.curl(`${ctx.app.config.idaas.base}${ctx.app.config.idaas.reset}?token=${token}`, {
+      const request = await ctx.curl(`${ctx.app.config.idaas.base}${ctx.app.config.idaas.forgetReset}?token=${token}`, {
         method: 'POST',
         headers: {
           'content-type': 'application/json'

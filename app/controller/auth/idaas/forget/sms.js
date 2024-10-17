@@ -22,7 +22,7 @@ class AuthIdaasForgetSmsController extends Controller {
 
     try {
       // 请求统一身份认证用户状态检测接口
-      const request = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.check, {
+      const request = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.forgetCheck, {
         method: 'POST',
         headers: {
           'content-type': 'application/json'
@@ -37,7 +37,7 @@ class AuthIdaasForgetSmsController extends Controller {
         // 帐号状态正常，请求验证码
         try {
           // 请求统一身份认证发送短信接口
-          const request = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.sms, {
+          const request = await ctx.curl(ctx.app.config.idaas.base + ctx.app.config.idaas.forgetSms, {
             method: 'POST',
             headers: {
               'content-type': 'application/json'
