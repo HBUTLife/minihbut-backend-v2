@@ -9,9 +9,10 @@ class AuthService extends Service {
   /**
    * 统一身份认证更新方法
    * @param {string} username 用户名
+   * @param {null|number} type 更新类型（0=主动更新,1=自动更新）
    * @return {object} 状态和信息
    */
-  async idaas(username) {
+  async idaas(username, type) {
     const { ctx } = this;
 
     // 数据库查询用户信息
@@ -47,19 +48,20 @@ class AuthService extends Service {
           const cookie_route = login.find(item => item.startsWith('route='));
 
           try {
-            const update = await ctx.app.mysql.update(
-              'user',
-              {
-                jw_uid: cookie_uid.replace('uid=', ''),
-                jw_route: cookie_route.replace('route=', ''),
-                update_time: dayjs().unix()
-              },
-              {
-                where: {
-                  student_id: username
-                }
+            let update_data = {
+              jw_uid: cookie_uid.replace('uid=', ''),
+              jw_route: cookie_route.replace('route=', '')
+            };
+
+            if (type === 1) {
+              update_data = { ...update_data, update_time: dayjs().unix() };
+            }
+
+            const update = await ctx.app.mysql.update('user', update_data, {
+              where: {
+                student_id: username
               }
-            );
+            });
             if (update.affectedRows === 1) {
               // 更新成功
               return {

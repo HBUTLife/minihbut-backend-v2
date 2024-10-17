@@ -21,7 +21,7 @@ class UpdateLesson extends Subscription {
       const query = await ctx.app.mysql.select('user', { where: { id: 1 } });
 
       // 重新授权登录避免用户已过期
-      const auth = await ctx.service.auth.idaas(query[0].student_id);
+      const auth = await ctx.service.auth.idaas(query[0].student_id, 1);
 
       if (auth.code !== 200) {
         // 授权失败则停止更新
@@ -51,6 +51,17 @@ class UpdateLesson extends Subscription {
           });
 
           if (enter.status === 200 && enter.data.total > 0) {
+            // 校验数据
+            const first_data = enter.data.results[0].sksjdd;
+            if (!first_data || first_data === '1') {
+              ctx.logger.error('全校课表数据校验失败，停止更新');
+              return;
+            }
+            if (first_data && first_data.split(' ').length === 0) {
+              ctx.logger.error('全校课表数据校验失败，停止更新');
+              return;
+            }
+
             // 获取成功且有数据
             await ctx.app.mysql.query('TRUNCATE TABLE lesson'); // 清空表 lesson
 
