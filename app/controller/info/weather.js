@@ -43,7 +43,7 @@ class InfoWeatherController extends Controller {
           info: {
             text: request.data.now.text, // 文字
             temperature: request.data.now.temp, // 温度
-            icon: `${ctx.app.config.qweather.iconUrl}/${request.data.now.icon}.png` // 图标
+            icon: `${ctx.app.config.qweather.iconUrl}/${request.data.now.icon}.png?x-oss-process=image/resize,w_28,h_28` // 图标
           },
           time: {
             observe_time: dayjs(request.data.now.obsTime).format('YYYY-MM-DD HH:mm'), // 数据观测时间
