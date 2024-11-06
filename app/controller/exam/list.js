@@ -87,7 +87,7 @@ class ExamListController extends Controller {
                 data: []
               };
             }
-          } else if (request.code >= 300 && request.code < 400) {
+          } else if (request.status >= 300 && request.status < 400) {
             // 登录过期，重新登录获取
             const reauth = await ctx.service.auth.idaas(user.student_id);
 
