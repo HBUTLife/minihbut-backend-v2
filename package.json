@@ -16,8 +16,7 @@
     "egg-redis": "^2.6.0",
     "egg-scripts": "2",
     "egg-validate": "^2.0.2",
-    "ics": "^3.7.6",
-    "minio": "^8.0.1"
+    "ics": "^3.7.6"
   },
   "devDependencies": {
     "egg-bin": "6",

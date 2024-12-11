@@ -15,7 +15,6 @@ module.exports = app => {
   router.get('/auth/wechat/status', controller.auth.wechat.status.index);
 
   router.get('/user/info', controller.user.info.index);
-  router.post('/user/avatar', controller.user.avatar.index);
 
   router.get('/timetable/person/list', controller.timetable.person.list.index);
   router.get('/timetable/person/today', controller.timetable.person.today.index);

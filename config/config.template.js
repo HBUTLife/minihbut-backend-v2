@@ -23,15 +23,6 @@ exports.redis = {
   }
 };
 
-// MinIO 配置
-exports.minio = {
-  endPoint: '',
-  port: 443,
-  useSSL: true,
-  accessKey: '',
-  secretKey: ''
-};
-
 // 日志配置
 exports.logger = {
   level: 'ERROR'
