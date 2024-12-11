@@ -3,7 +3,6 @@
  */
 module.exports = app => {
   const { router, controller } = app;
-  router.get('/', controller.home.index);
 
   router.post('/auth/idaas/login', controller.auth.idaas.login.index);
   router.post('/auth/idaas/forget/sms', controller.auth.idaas.forget.sms.index);
