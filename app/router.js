@@ -45,7 +45,5 @@ module.exports = app => {
 
   router.get('/info/urgent', controller.info.urgent.index);
   router.get('/info/weather', controller.info.weather.index);
-  router.get('/info/share', controller.info.share.index);
-  router.get('/info/static', controller.info.static.index);
   router.get('/info/miniprogram', controller.info.miniprogram.index);
 };
