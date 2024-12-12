@@ -94,12 +94,6 @@ module.exports = () => {
     '/info/miniprogram'
   ];
 
-  // 上传文件配置
-  config.multipart = {
-    mode: 'stream',
-    fileSize: '3mb' // 限制上传最大 3 MB
-  };
-
   // 日志配置
   config.logger = {
     outputJSON: true
