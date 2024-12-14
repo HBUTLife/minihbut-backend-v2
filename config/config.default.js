@@ -78,7 +78,6 @@ module.exports = () => {
 
   // 无需鉴权的接口
   config.whitelist = [
-    '/',
     '/auth/idaas/login',
     '/auth/idaas/forget/sms',
     '/auth/idaas/forget/code',
@@ -89,8 +88,6 @@ module.exports = () => {
     '/info/swiper/click',
     '/info/urgent',
     '/info/weather',
-    '/info/share',
-    '/info/static',
     '/info/miniprogram'
   ];
 
