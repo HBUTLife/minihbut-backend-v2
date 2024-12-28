@@ -16,6 +16,7 @@ module.exports = app => {
 
   router.get('/user/info', controller.user.info.index);
   router.post('/user/upload', controller.user.upload.index);
+  router.post('/user/avatar', controller.user.avatar.index);
 
   router.get('/timetable/person/list', controller.timetable.person.list.index);
   router.get('/timetable/person/today', controller.timetable.person.today.index);
