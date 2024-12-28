@@ -76,6 +76,18 @@ module.exports = () => {
     secret: 'JGwjz4uunJDxbtcntZzaGm3mPukpnoHP' // 服务端私钥
   };
 
+  // OSS 配置
+  config.oss = {
+    host: 'https://image-souta.oss-cn-shanghai.aliyuncs.com',
+    accessKeyId: 'LTAI5tCv5TM9stprAp96Sq56',
+    accessKeySecret: 'DKPfiGvyGobVvUcYqVtWonJMxxCS2D', // 密钥仅用于上传文件
+    conditions: [
+      { bucket: 'image-souta' }, // 桶名称
+      ['content-length-range', 0, 2097152], // 上传文件最大为 2 MB
+      ['eq', '$success_action_status', '200'] // 设置成功返回 200
+    ]
+  };
+
   // 无需鉴权的接口
   config.whitelist = [
     '/auth/idaas/login',
