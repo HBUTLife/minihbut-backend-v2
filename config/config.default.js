@@ -85,7 +85,7 @@ module.exports = () => {
     conditions: [
       { bucket: 'image-souta' }, // 桶名称
       ['content-length-range', 0, 2097152], // 上传文件最大为 2 MB
-      ['in', '$content-type', ['image/jpg', 'image/png']] // 上传文件类型为 JPG JPEG PNG
+      ['in', '$content-type', ['image/jpeg', 'image/png']] // 上传文件类型为 JPG JPEG PNG
     ]
   };
 
