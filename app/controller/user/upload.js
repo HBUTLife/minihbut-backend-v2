@@ -30,8 +30,7 @@ class UserUploadController extends Controller {
         expiration: dayjs().add(5, 'minutes').toISOString(),
         conditions: [
           ...ctx.app.config.oss.conditions,
-          ['eq', '$key', uploadKey], // 限制上传文件路径
-          ['eq', '$content-type', this.getContentType(fileExt)] // 上传文件类型
+          ['eq', '$key', uploadKey] // 限制上传文件路径
         ]
       })
     );
@@ -53,18 +52,6 @@ class UserUploadController extends Controller {
       message: '上传信息获取成功',
       data
     };
-  }
-
-  /**
-   * 获取文件类型
-   * @param {string} ext 文件后缀
-   * @return {string} 文件类型
-   */
-  getContentType(ext) {
-    if (ext === 'jpg') {
-      return 'image/jpeg';
-    }
-    return 'image/' + ext;
   }
 }
 
