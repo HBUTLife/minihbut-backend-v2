@@ -42,6 +42,7 @@ class UserUploadController extends Controller {
     const data = {
       type: 'oss',
       host: ctx.app.config.oss.host,
+      cdn: ctx.app.config.oss.cdn,
       access_key_id: ctx.app.config.oss.accessKeyId,
       key: uploadKey,
       policy,
