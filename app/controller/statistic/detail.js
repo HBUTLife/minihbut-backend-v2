@@ -52,11 +52,11 @@ class StatisticDetailController extends Controller {
 
         const total_number = query.length; // 样本总量
 
-        // 样本量少于30不予展示
-        if (total_number < 30) {
+        // 样本量少于15不予展示
+        if (total_number < 15) {
           this.ctx.body = {
             code: 416,
-            message: '给分统计样本量少于30'
+            message: '给分统计样本量少于15'
           };
           return;
         }
