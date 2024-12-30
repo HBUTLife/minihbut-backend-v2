@@ -3,6 +3,10 @@
 const { Controller } = require('egg');
 const ics = require('ics');
 const dayjs = require('dayjs');
+const timezone = require('dayjs/plugin/timezone');
+
+dayjs.extend(timezone);
+dayjs.tz.setDefault('Asia/Shanghai'); // 设置时区为中国上海
 
 // 定义创建接口的请求参数规则
 const createRule = {
