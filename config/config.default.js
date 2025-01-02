@@ -79,7 +79,7 @@ module.exports = () => {
   // OSS 配置
   config.oss = {
     host: 'https://image-souta.oss-cn-shanghai.aliyuncs.com',
-    cdn: 'https://img.stslb.com',
+    cdn: 'https://i.stslb.com',
     accessKeyId: 'LTAI5tCv5TM9stprAp96Sq56',
     accessKeySecret: 'DKPfiGvyGobVvUcYqVtWonJMxxCS2D', // 密钥仅用于上传文件
     conditions: [

@@ -58,7 +58,7 @@ class UserAvatarController extends Controller {
    */
   checkDomain(url) {
     // 域名白名单
-    const whitelist = ['img.stslb.com'];
+    const whitelist = ['i.stslb.com'];
 
     // 检验
     const parsedUrl = new URL(url);
