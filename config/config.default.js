@@ -44,14 +44,12 @@ module.exports = () => {
 
   // 和风天气接口配置
   config.qweather = {
-    // base: 'https://devapi.qweather.com', // 免费接口地址
-    // key: 'c406bedc167d4c28837effa09d4efea5' // 免费 Key
-    base: 'https://api.qweather.com', // 付费接口地址
+    base: 'https://devapi.qweather.com',
+    key: '',
     url: {
       now: '/v7/weather/now' // 实时天气
     },
     iconUrl: 'https://wx-mini-program-kjdueh.qweather.net/sites/mini-program/v1/icon',
-    key: 'aa5bc22d1a894af1a230918b04ddba15', // 官方 Key
     location: '101200113' // 默认位置 湖北省武汉市洪山区
   };
 
@@ -61,29 +59,29 @@ module.exports = () => {
     url: {
       jscode2session: '/sns/jscode2session' // 小程序登录
     },
-    appId: 'wx42a9beac92f39a9a', // 小程序 appId
-    appSecret: 'd1562932c12945fbfd02813c518f5092' // 小程序 appSecret
+    appId: '', // 小程序 appId
+    appSecret: '' // 小程序 appSecret
   };
 
   // 公共 jwt 配置
   config.jwt = {
-    secret: 'qbiWBcUR9qEEnNLkoQ7Yk4ccpX6jcTuz', // jwt 服务端私钥
+    secret: '', // jwt 服务端私钥
     expiresIn: 365 * 86400 // token 过期时间 365 天
   };
 
   // 用户密码加密配置
   config.encryption = {
-    secret: 'JGwjz4uunJDxbtcntZzaGm3mPukpnoHP' // 服务端私钥
+    secret: '' // 服务端私钥
   };
 
   // OSS 配置
   config.oss = {
-    host: 'https://image-souta.oss-cn-shanghai.aliyuncs.com',
-    cdn: 'https://i.stslb.com',
-    accessKeyId: 'LTAI5tCv5TM9stprAp96Sq56',
-    accessKeySecret: 'DKPfiGvyGobVvUcYqVtWonJMxxCS2D', // 密钥仅用于上传文件
+    host: '',
+    cdn: '',
+    accessKeyId: '',
+    accessKeySecret: '', // 密钥仅用于上传文件
     conditions: [
-      { bucket: 'image-souta' }, // 桶名称
+      { bucket: '' }, // 桶名称
       ['content-length-range', 0, 2097152], // 上传文件最大为 2 MB
       ['in', '$content-type', ['image/jpeg', 'image/png']] // 上传文件类型为 JPG JPEG PNG
     ]
